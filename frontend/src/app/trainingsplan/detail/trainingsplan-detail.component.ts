@@ -45,7 +45,7 @@ export class TrainingsplanDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id === 'neu') {
+    if (!id || id === 'neu') {
       this.isNew = true;
       this.editingPlan = true;
       this.loading = false;
