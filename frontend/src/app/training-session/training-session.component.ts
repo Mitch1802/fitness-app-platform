@@ -239,15 +239,17 @@ export class TrainingSessionComponent implements OnInit {
   }
 
   private normalizePlan(plan: Trainingsplan): Trainingsplan {
+    const planIncrement = plan.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT;
+
     return {
       ...plan,
       aufwaermen: typeof plan.aufwaermen === 'string' ? plan.aufwaermen : '',
-      gewicht_steigerung: plan.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT,
+      gewicht_steigerung: planIncrement,
       uebungen: Array.isArray(plan.uebungen)
         ? plan.uebungen.map(uebung => ({
             ...uebung,
             saetze: Array.isArray(uebung.saetze) ? uebung.saetze : [],
-            gewicht_steigerung: uebung.gewicht_steigerung ?? plan.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT,
+            gewicht_steigerung: uebung.gewicht_steigerung ?? planIncrement,
           }))
         : [],
     };

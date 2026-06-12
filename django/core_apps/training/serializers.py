@@ -30,8 +30,10 @@ class UebungSerializer(serializers.ModelSerializer):
         return nachfolger.name if nachfolger else None
 
     def validate_saetze(self, value):
-        if value in (None, ""):
+        if value is None:
             return []
+        if value == "":
+            raise serializers.ValidationError("Leere Zeichenketten sind für Sätze nicht erlaubt.")
         if not isinstance(value, list):
             raise serializers.ValidationError("Muss eine Liste sein.")
         for item in value:

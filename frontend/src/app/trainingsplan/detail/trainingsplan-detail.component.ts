@@ -86,7 +86,7 @@ export class TrainingsplanDetailComponent implements OnInit {
   }
 
   initUebungForm(uebung: Uebung | null): void {
-    const normalizedUebung = uebung ? this.normalizeExercise(uebung) : null;
+    const normalizedUebung = uebung ? this.normalizeExercise(uebung, this.plan?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT) : null;
     const initialSaetze = normalizedUebung?.saetze ?? [];
 
     this.uebungForm = this.fb.group({
@@ -270,22 +270,25 @@ export class TrainingsplanDetailComponent implements OnInit {
   }
 
   private normalizePlan(plan: Trainingsplan): Trainingsplan {
+    const planIncrement = plan.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT;
+
     return {
       ...plan,
       aufwaermen: typeof plan.aufwaermen === 'string' ? plan.aufwaermen : '',
-      uebungen: this.normalizeExercises(plan.uebungen),
+      gewicht_steigerung: planIncrement,
+      uebungen: this.normalizeExercises(plan.uebungen, planIncrement),
     };
   }
 
-  private normalizeExercises(rawUebungen: unknown): Uebung[] {
-    return Array.isArray(rawUebungen) ? rawUebungen.map(uebung => this.normalizeExercise(uebung as Uebung)) : [];
+  private normalizeExercises(rawUebungen: unknown, planIncrement: number): Uebung[] {
+    return Array.isArray(rawUebungen) ? rawUebungen.map(uebung => this.normalizeExercise(uebung as Uebung, planIncrement)) : [];
   }
 
-  private normalizeExercise(uebung: Uebung): Uebung {
+  private normalizeExercise(uebung: Uebung, planIncrement: number): Uebung {
     return {
       ...uebung,
       saetze: Array.isArray(uebung.saetze) ? uebung.saetze : [],
-      gewicht_steigerung: uebung.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT,
+      gewicht_steigerung: uebung.gewicht_steigerung ?? planIncrement,
       nachfolger_id: uebung.nachfolger_id ?? null,
       nachfolger_name: uebung.nachfolger_name ?? null,
       vorgaenger: uebung.vorgaenger ?? null,
