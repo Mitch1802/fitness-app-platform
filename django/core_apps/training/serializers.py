@@ -43,6 +43,13 @@ class UebungSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Jeder Eintrag braucht "nr" und "wdh".'
                 )
+            if not isinstance(item["wdh"], (str, int, float)):
+                raise serializers.ValidationError('"wdh" muss eine Zahl oder ein Text (z.B. "8-12") sein.')
+            if "gewicht" in item and item["gewicht"] is not None:
+                try:
+                    float(item["gewicht"])
+                except (TypeError, ValueError):
+                    raise serializers.ValidationError('"gewicht" muss eine Zahl sein.')
         return value
 
     def validate(self, attrs):

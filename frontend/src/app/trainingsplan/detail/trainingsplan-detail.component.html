@@ -34,11 +34,6 @@
             <mat-label>Beschreibung (optional)</mat-label>
             <textarea matInput formControlName="beschreibung" rows="2"></textarea>
           </mat-form-field>
-          <mat-form-field class="half-width spaced-field">
-            <mat-label>Standard-Steigerung (kg)</mat-label>
-            <input matInput type="number" formControlName="gewicht_steigerung" step="0.5" min="0.5" />
-            <mat-hint>Standardwert für neue Übungen</mat-hint>
-          </mat-form-field>
           <div class="form-actions">
             @if (!isNew) {
               <button mat-button type="button" (click)="editingPlan = false">Abbrechen</button>
@@ -66,7 +61,6 @@
           <p class="plan-desc top-space">{{ plan.beschreibung }}</p>
         }
         <div class="plan-meta">
-          <span><mat-icon inline>trending_up</mat-icon> Standard: +{{ plan.gewicht_steigerung }} kg</span>
           <span><mat-icon inline>fitness_center</mat-icon> {{ plan.uebungen.length }} Übungen</span>
         </div>
       </mat-card-content>
@@ -94,10 +88,6 @@
                 <input matInput formControlName="name" placeholder="z.B. Bankdrücken" />
               </mat-form-field>
               <div class="row-fields spaced-field">
-                <mat-form-field class="half-width">
-                  <mat-label>Startgewicht (kg)</mat-label>
-                  <input matInput type="number" formControlName="gewicht" step="0.5" min="0" />
-                </mat-form-field>
                 <mat-form-field class="half-width">
                   <mat-label>Steigerung (kg)</mat-label>
                   <input matInput type="number" formControlName="gewicht_steigerung" step="0.5" min="0.5" />
@@ -153,7 +143,11 @@
                     <span class="satz-nr">Satz {{ i + 1 }}</span>
                     <mat-form-field class="wdh-field">
                       <mat-label>Wdh.</mat-label>
-                      <input matInput type="number" formControlName="wdh" min="1" />
+                      <input matInput type="text" formControlName="wdh" placeholder="z.B. 10 oder 8-12" />
+                    </mat-form-field>
+                    <mat-form-field class="gewicht-field">
+                      <mat-label>kg</mat-label>
+                      <input matInput type="number" formControlName="gewicht" step="0.5" min="0" />
                     </mat-form-field>
                     <button mat-icon-button type="button" (click)="removeSatz(i)" color="warn">
                       <mat-icon>remove_circle_outline</mat-icon>
@@ -193,13 +187,12 @@
                   }
                   <div class="saetze-chips">
                     @for (s of uebung.saetze; track s.nr) {
-                      <span class="satz-chip">{{ s.wdh }} Wdh</span>
+                      <span class="satz-chip">{{ s.wdh }} Wdh{{ s.gewicht ? ' · ' + s.gewicht + ' kg' : '' }}</span>
                     }
                     @if (uebung.saetze.length === 0) {
                       <span class="satz-chip neutral-chip">Ohne Sätze</span>
                     }
-                    <span class="gewicht-chip">{{ uebung.gewicht }} kg</span>
-                    <span class="steigerung-chip">+{{ uebung.gewicht_steigerung ?? plan.gewicht_steigerung }} kg</span>
+                    <span class="steigerung-chip">+{{ uebung.gewicht_steigerung }} kg</span>
                   </div>
                   @if (uebung.hinweis) {
                     <p class="uebung-hinweis">{{ uebung.hinweis }}</p>

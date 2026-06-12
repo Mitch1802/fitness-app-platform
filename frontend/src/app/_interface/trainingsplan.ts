@@ -1,6 +1,7 @@
 export interface Satz {
   nr: number;
-  wdh: number;
+  wdh: string;
+  gewicht?: number;
 }
 
 export interface Uebung {

@@ -80,7 +80,6 @@ export class TrainingsplanDetailComponent implements OnInit {
       name: [plan?.name ?? '', [Validators.required, Validators.maxLength(200)]],
       aufwaermen: [plan?.aufwaermen ?? ''],
       beschreibung: [plan?.beschreibung ?? ''],
-      gewicht_steigerung: [plan?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT, [Validators.required, Validators.min(0.5)]],
       ist_aktiv: [plan?.ist_aktiv ?? true],
     });
   }
@@ -92,8 +91,7 @@ export class TrainingsplanDetailComponent implements OnInit {
     this.uebungForm = this.fb.group({
       name: [normalizedUebung?.name ?? '', [Validators.required]],
       hinweis: [normalizedUebung?.hinweis ?? ''],
-      gewicht: [normalizedUebung?.gewicht ?? 0, [Validators.min(0)]],
-      gewicht_steigerung: [normalizedUebung?.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT, [Validators.required, Validators.min(0.5)]],
+      gewicht_steigerung: [normalizedUebung?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT, [Validators.required, Validators.min(0.5)]],
       vorgaenger: [normalizedUebung?.vorgaenger ?? null],
       nachfolger: [normalizedUebung?.nachfolger_id ?? this.findNachfolgerId(normalizedUebung?.id ?? null)],
       reihenfolge: [normalizedUebung?.reihenfolge ?? (this.plan?.uebungen?.length ?? 0)],
@@ -104,7 +102,8 @@ export class TrainingsplanDetailComponent implements OnInit {
   satzGroup(s?: Partial<Satz>): FormGroup {
     return this.fb.group({
       nr: [s?.nr ?? 1],
-      wdh: [s?.wdh ?? 10, [Validators.required, Validators.min(1)]],
+      wdh: [s?.wdh ?? '10', [Validators.required]],
+      gewicht: [s?.gewicht ?? 0, [Validators.min(0)]],
     });
   }
 
@@ -133,8 +132,9 @@ export class TrainingsplanDetailComponent implements OnInit {
 
   addSatz(): void {
     const len = this.saetzeArray.length;
-    const lastWdh = len > 0 ? (this.saetzeArray.at(len - 1).get('wdh')?.value ?? 10) : 10;
-    this.saetzeArray.push(this.satzGroup({ nr: len + 1, wdh: lastWdh }));
+    const lastWdh = len > 0 ? (this.saetzeArray.at(len - 1).get('wdh')?.value ?? '10') : '10';
+    const lastGewicht = len > 0 ? (this.saetzeArray.at(len - 1).get('gewicht')?.value ?? 0) : 0;
+    this.saetzeArray.push(this.satzGroup({ nr: len + 1, wdh: lastWdh, gewicht: lastGewicht }));
   }
 
   removeSatz(i: number): void {
@@ -232,14 +232,17 @@ export class TrainingsplanDetailComponent implements OnInit {
   private buildUebungPayload(): Partial<Uebung> {
     const raw = this.uebungForm.getRawValue();
     const saetze = Array.isArray(raw.saetze)
-      ? raw.saetze.map((satz: Satz, index: number) => ({ nr: index + 1, wdh: Number(satz.wdh) }))
+      ? raw.saetze.map((satz: Satz, index: number) => ({
+          nr: index + 1,
+          wdh: String(satz.wdh),
+          gewicht: Number(satz.gewicht ?? 0),
+        }))
       : [];
 
     return {
       name: raw.name,
       hinweis: raw.hinweis ?? '',
-      gewicht: Number(raw.gewicht ?? 0),
-      gewicht_steigerung: Number(raw.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT),
+      gewicht_steigerung: Number(raw.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT),
       vorgaenger: raw.vorgaenger ?? null,
       reihenfolge: Number(raw.reihenfolge ?? 0),
       saetze,

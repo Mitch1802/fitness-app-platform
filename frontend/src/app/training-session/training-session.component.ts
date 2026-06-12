@@ -128,23 +128,31 @@ export class TrainingSessionComponent implements OnInit {
   }
 
   get selectedSteigerungText(): string {
-    const steigerung = this.selectedUebung?.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? null;
+    const steigerung = this.selectedUebung?.gewicht_steigerung ?? null;
     return steigerung === null ? 'x' : String(steigerung);
   }
 
   selectUebung(uebung: Uebung): void {
     this.selectedUebungId = uebung.id;
     const nextSatzNr = this.getNextSatzNr(uebung.id, uebung.name);
+    const plannedSatz = uebung.saetze[nextSatzNr - 1] ?? uebung.saetze[0];
     this.satzForm.patchValue({
       uebung_id: uebung.id,
       uebung_name: uebung.name,
       satz_nummer: nextSatzNr,
-      wiederholungen: uebung.saetze[nextSatzNr - 1]?.wdh ?? uebung.saetze[0]?.wdh ?? 10,
-      gewicht: uebung.gewicht,
+      wiederholungen: this.parseWdh(plannedSatz?.wdh),
+      gewicht: plannedSatz?.gewicht ?? uebung.gewicht ?? 0,
       gewicht_erhoehen: false,
     });
     this.showSatzForm = true;
     this.showExtraForm = false;
+  }
+
+  private parseWdh(wdh: string | undefined): number {
+    if (!wdh) return 10;
+    const first = String(wdh).split(/[-\/,]/)[0].trim();
+    const parsed = parseInt(first, 10);
+    return isNaN(parsed) ? 10 : parsed;
   }
 
   getNextSatzNr(uebungId: number | null, uebungName: string): number {
