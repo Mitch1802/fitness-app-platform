@@ -26,6 +26,21 @@ class PublicLoginView(LoginView):
     permission_classes = [permissions.AllowAny]
 
 
+class AuthStatusView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"authenticated": False})
+
+        return Response(
+            {
+                "authenticated": True,
+                "user": UserDetailSerializer(request.user).data,
+            }
+        )
+
+
 class ForceLogoutView(LogoutView):
     pass
 
