@@ -35,11 +35,11 @@ class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        # Accept username + credentials (our alias for password to avoid tool masking)
+        # Accept username + credentials
         data = {}
         data["username"] = request.data.get("username", "")
-        # Accept "credentials" OR the standard "password" field
-        raw = request.data.get("credentials") or request.data.get("p" + "assword", "")
+        # Accept both "credentials" alias and standard "password" field
+        raw = request.data.get("credentials") or request.data.get("password", "")
         data["credentials"] = raw
 
         serializer = RegisterInputSerializer(data=data)
@@ -48,7 +48,7 @@ class RegisterView(APIView):
 
         username = serializer.validated_data["username"]
         credentials = serializer.validated_data["credentials"]
-        user = User.objects.create_user(username=username, **{"p" + "assword": credentials})
+        user = User.objects.create_user(username=username, **{"password": credentials})
         return Response({"username": user.username}, status=status.HTTP_201_CREATED)
 
 

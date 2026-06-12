@@ -44,7 +44,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  startFreesTraining(): void {
+  startFreiesTraining(): void {
     this.sessionService.create({}).subscribe({
       next: (session) => this.router.navigate(['/session', session.id]),
     });

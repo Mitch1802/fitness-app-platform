@@ -11,7 +11,7 @@
         <p class="session-date">{{ formatDate(session.datum) }}</p>
       </div>
       @if (!session.abgeschlossen) {
-        <button mat-flat-button color="accent" class="finish-btn" (click)="trainingSabschliessen()" [disabled]="abschliessen_saving">
+        <button mat-flat-button color="accent" class="finish-btn" (click)="trainingAbschliessen()" [disabled]="abschliessen_saving">
           <mat-icon>done_all</mat-icon> Abschließen
         </button>
       } @else {

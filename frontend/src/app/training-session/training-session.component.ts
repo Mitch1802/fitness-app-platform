@@ -207,7 +207,7 @@ export class TrainingSessionComponent implements OnInit {
     });
   }
 
-  trainingSabschliessen(): void {
+  trainingAbschliessen(): void {
     if (!this.session || this.abschliessen_saving) return;
     if (!confirm('Training abschließen? Gewichtssteigerungen werden angewendet.')) return;
     this.abschliessen_saving = true;
