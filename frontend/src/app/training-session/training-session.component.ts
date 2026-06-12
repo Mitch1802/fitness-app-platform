@@ -129,7 +129,7 @@ export class TrainingSessionComponent implements OnInit {
 
   get selectedSteigerungText(): string {
     const steigerung = this.selectedUebung?.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? null;
-    return steigerung === null || steigerung === undefined ? 'x' : String(steigerung);
+    return steigerung === null ? 'x' : String(steigerung);
   }
 
   selectUebung(uebung: Uebung): void {

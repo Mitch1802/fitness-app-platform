@@ -3,6 +3,7 @@ from django.db import migrations, models
 
 
 def copy_plan_increment_to_exercises(apps, schema_editor):
+    """Copy each plan's default increment to existing exercises that do not have one yet."""
     Uebung = apps.get_model("training", "Uebung")
 
     updates = []

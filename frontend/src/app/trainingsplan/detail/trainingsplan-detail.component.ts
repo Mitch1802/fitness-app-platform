@@ -277,8 +277,8 @@ export class TrainingsplanDetailComponent implements OnInit {
     };
   }
 
-  private normalizeExercises(uebungen: unknown): Uebung[] {
-    return Array.isArray(uebungen) ? uebungen.map(uebung => this.normalizeExercise(uebung as Uebung)) : [];
+  private normalizeExercises(rawUebungen: unknown): Uebung[] {
+    return Array.isArray(rawUebungen) ? rawUebungen.map(uebung => this.normalizeExercise(uebung as Uebung)) : [];
   }
 
   private normalizeExercise(uebung: Uebung): Uebung {
