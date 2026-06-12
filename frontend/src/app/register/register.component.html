@@ -1,0 +1,43 @@
+<div class="auth-page">
+  <mat-card class="auth-card">
+    <mat-card-header>
+      <div class="auth-logo">&#x1F3CB;&#xFE0F;</div>
+      <mat-card-title>FitTrack</mat-card-title>
+      <mat-card-subtitle>Konto erstellen</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="registrieren()" class="auth-form">
+        <mat-form-field class="full-width">
+          <mat-label>Benutzername</mat-label>
+          <input matInput formControlName="username" autocomplete="username" autocapitalize="none" />
+          @if (f.username.invalid && f.username.touched) {
+            <mat-error>3–50 Zeichen erforderlich</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field class="full-width">
+          <mat-label>Passwort</mat-label>
+          <input matInput formControlName="password" [type]="showPwd ? 'text' : 'password'" autocomplete="new-password" />
+          <button mat-icon-button type="button" matSuffix (click)="showPwd = !showPwd">
+            <mat-icon>{{ showPwd ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (f.password.invalid && f.password.touched) {
+            <mat-error>Mindestens 8 Zeichen</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field class="full-width">
+          <mat-label>Passwort bestätigen</mat-label>
+          <input matInput formControlName="password_confirm" [type]="showPwd ? 'text' : 'password'" autocomplete="new-password" />
+          @if (pwMismatch) {
+            <mat-error>Passwörter stimmen nicht überein</mat-error>
+          }
+        </mat-form-field>
+        <button mat-flat-button color="primary" type="submit" class="full-width submit-btn" [disabled]="form.invalid || isSubmitting">
+          Registrieren
+        </button>
+      </form>
+    </mat-card-content>
+    <mat-card-actions>
+      <p class="auth-link">Bereits ein Konto? <a routerLink="/login">Anmelden</a></p>
+    </mat-card-actions>
+  </mat-card>
+</div>

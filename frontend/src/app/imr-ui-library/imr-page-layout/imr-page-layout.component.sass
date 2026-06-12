@@ -1,0 +1,35 @@
+﻿.imr-page
+	max-width: var(--imr-page-max-width)
+	margin: 0 auto
+	padding: var(--imr-page-padding)
+
+.imr-page.news-extern-page
+	max-width: 100%
+	width: 100%
+	min-height: 100dvh
+
+.imr-page__head
+	margin: 0 0 1rem
+	display: flex
+	align-items: center
+	gap: .5rem
+
+	h1
+		margin: 0
+		flex: 1 1 auto
+		color: var(--imr-primary)
+		font-size: clamp(1.5rem, 2.4vw, 2.1rem)
+		line-height: 1.2
+
+@media only screen and (max-width: 700px)
+	.imr-page
+		padding: var(--imr-page-padding-mobile)
+
+	.imr-page__head
+		margin-bottom: 1rem
+
+		h1
+			font-size: 1.4rem
+
+
+

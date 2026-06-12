@@ -1,0 +1,102 @@
+<div class="page">
+  <h1 class="page-title">Statistik</h1>
+
+  @if (loading) {
+    <div class="loading">Lade Statistiken...</div>
+  }
+
+  @if (!loading && data.length === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">bar_chart</mat-icon>
+      <p>Noch keine Daten. Absolviere dein erstes Training!</p>
+    </div>
+  }
+
+  @if (!loading && data.length > 0) {
+    <!-- Exercise Selector -->
+    <div class="chips-scroll">
+      @for (entry of data; track entry.uebung_id) {
+        <mat-chip-option
+          [selected]="selectedUebung?.uebung_id === entry.uebung_id"
+          (click)="selectUebung(entry)"
+          class="exercise-chip">
+          {{ entry.uebung_name }}
+        </mat-chip-option>
+      }
+    </div>
+
+    @if (selectedUebung) {
+      <!-- Summary Cards -->
+      <div class="summary-grid">
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-value">{{ maxGewicht | number:'1.1-2' }} kg</div>
+            <div class="stat-label">Max. Gewicht</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-value">{{ totalEinheiten }}</div>
+            <div class="stat-label">Einheiten</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-value">{{ selectedUebung.daten.length }}</div>
+            <div class="stat-label">Sätze gesamt</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Chart -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>{{ selectedUebung.uebung_name }}</mat-card-title>
+          <mat-card-subtitle>Gewichtsentwicklung</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          @if (chartData.labels && chartData.labels.length > 1) {
+            <div class="chart-container">
+              <canvas baseChart
+                [data]="chartData"
+                [options]="chartOptions"
+                type="line">
+              </canvas>
+            </div>
+          } @else {
+            <p class="no-chart">Mindestens 2 Trainingseinheiten für einen Chart benötigt.</p>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Detail Table -->
+      <mat-card class="detail-card">
+        <mat-card-header>
+          <mat-card-title>Alle Ergebnisse</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <table class="detail-table">
+            <thead>
+              <tr>
+                <th>Datum</th>
+                <th>Satz</th>
+                <th>Gewicht</th>
+                <th>Wdh</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (d of selectedUebung.daten; track $index) {
+                <tr>
+                  <td>{{ d.datum | date:'dd.MM.yy' }}</td>
+                  <td>{{ d.satz_nummer }}</td>
+                  <td>{{ d.gewicht | number:'1.1-2' }} kg</td>
+                  <td>{{ d.wiederholungen }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+</div>

@@ -1,0 +1,82 @@
+.shell-container
+  display: flex
+  flex-direction: column
+  height: 100vh
+  height: 100dvh
+
+.app-header
+  display: flex
+  align-items: center
+  padding: 0 8px 0 16px
+  height: 56px
+  background: var(--mat-toolbar-container-background-color, #1b5e20)
+  color: white
+  position: sticky
+  top: 0
+  z-index: 100
+
+  .app-title
+    font-size: 18px
+    font-weight: 600
+    letter-spacing: 0.5px
+
+  .spacer
+    flex: 1
+
+.app-content
+  flex: 1
+  overflow-y: auto
+  padding-bottom: env(safe-area-inset-bottom, 0)
+
+.bottom-nav
+  display: flex
+  height: 56px
+  background: white
+  position: sticky
+  bottom: 0
+  z-index: 100
+  padding-bottom: env(safe-area-inset-bottom, 0)
+
+.nav-item
+  flex: 1
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: center
+  text-decoration: none
+  color: #757575
+  font-size: 10px
+  gap: 2px
+  transition: color 0.2s
+
+  mat-icon
+    font-size: 22px
+    width: 22px
+    height: 22px
+
+  &.active
+    color: #1b5e20
+
+  &--cta mat-icon
+    font-size: 28px
+    width: 28px
+    height: 28px
+
+  &--cta.has-active
+    color: #f44336
+    animation: pulse 2s infinite
+
+@keyframes pulse
+  0%, 100%
+    opacity: 1
+  50%
+    opacity: 0.7
+
+.user-menu-header
+  padding: 12px 16px
+  display: flex
+  align-items: center
+  gap: 8px
+  font-weight: 500
+  border-bottom: 1px solid #eee
+  pointer-events: none

@@ -1,0 +1,182 @@
+.page
+  padding: 16px
+  max-width: 600px
+  margin: 0 auto
+
+.loading
+  text-align: center
+  padding: 48px
+
+.session-header
+  display: flex
+  align-items: flex-start
+  gap: 8px
+  margin-bottom: 16px
+
+.session-info
+  flex: 1
+
+.session-title
+  font-size: 20px
+  font-weight: 700
+  margin: 0 0 4px
+
+.session-date
+  font-size: 13px
+  color: #888
+  margin: 0
+
+.finish-btn
+  white-space: nowrap
+  flex-shrink: 0
+
+.badge-done
+  display: flex
+  align-items: center
+  gap: 4px
+  color: #1b5e20
+  font-weight: 500
+
+.tabs
+  margin: 0 -16px
+
+.tab-content
+  padding: 16px
+
+.tab-hint
+  font-size: 13px
+  color: #888
+  margin: 0 0 12px
+
+.uebungen-grid
+  display: grid
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr))
+  gap: 8px
+  margin-bottom: 16px
+
+.uebung-chip
+  cursor: pointer
+  border-radius: 10px !important
+  transition: all 0.15s
+
+  &:hover, &.selected
+    background: #e8f5e9 !important
+    border: 2px solid #1b5e20
+
+  mat-card-content
+    padding: 10px 8px !important
+    display: flex
+    flex-direction: column
+    align-items: center
+    gap: 2px
+
+.chip-name
+  font-size: 12px
+  font-weight: 600
+  text-align: center
+
+.chip-weight
+  font-size: 11px
+  color: #1565c0
+  font-weight: 500
+
+.satz-form-card
+  margin-top: 16px
+  border-radius: 12px !important
+  border-left: 3px solid #1b5e20
+
+.ergebnis-gruppe
+  margin-bottom: 12px
+  border-radius: 10px !important
+
+  mat-card-content
+    padding: 8px 16px !important
+
+.satz-row
+  display: flex
+  align-items: center
+  padding: 6px 0
+  border-bottom: 1px solid #f5f5f5
+
+  &:last-child
+    border-bottom: none
+
+.satz-nr
+  font-size: 12px
+  color: #888
+  min-width: 55px
+
+.satz-data
+  flex: 1
+  font-size: 14px
+  font-weight: 500
+
+.satz-actions
+  display: flex
+  align-items: center
+
+.erhoehen-btn
+  color: #ccc
+  &.active
+    color: #f44336
+
+.erhoehen-icon
+  color: #f44336
+  font-size: 18px
+
+.extra-card
+  margin-bottom: 8px
+  border-radius: 10px !important
+
+  mat-card-content
+    padding: 12px !important
+
+.extra-row
+  display: flex
+  align-items: center
+  gap: 8px
+
+  mat-icon
+    color: #1b5e20
+
+.extra-info
+  flex: 1
+  display: flex
+  flex-direction: column
+
+.extra-name
+  font-size: 14px
+  font-weight: 500
+
+.extra-meta
+  font-size: 12px
+  color: #888
+
+.actions-row
+  margin-bottom: 16px
+
+.input-row
+  display: flex
+  gap: 8px
+  flex-wrap: wrap
+
+.flex-field
+  flex: 1
+  min-width: 80px
+
+.satz-nr-field
+  width: 70px
+
+.full-width
+  width: 100%
+
+.form-actions
+  display: flex
+  justify-content: flex-end
+  gap: 8px
+  margin-top: 8px
+
+.empty-state
+  text-align: center
+  color: #888
+  padding: 32px

@@ -1,0 +1,47 @@
+<div class="page">
+  <div class="page-header">
+    <h1 class="page-title">Meine Trainingspläne</h1>
+    <button mat-mini-fab color="primary" (click)="create()" aria-label="Plan erstellen">
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Lade Pläne...</div>
+  }
+
+  @if (!loading && plans.length === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">fitness_center</mat-icon>
+      <p>Noch keine Trainingspläne</p>
+      <button mat-flat-button color="primary" (click)="create()">Plan erstellen</button>
+    </div>
+  }
+
+  <div class="plans-list">
+    @for (plan of plans; track plan.id) {
+      <mat-card class="plan-card" (click)="openPlan(plan.id)">
+        <mat-card-content>
+          <div class="plan-row">
+            <div class="plan-info">
+              <h3 class="plan-name">{{ plan.name }}</h3>
+              @if (plan.beschreibung) {
+                <p class="plan-desc">{{ plan.beschreibung }}</p>
+              }
+              <div class="plan-meta">
+                <span><mat-icon inline>fitness_center</mat-icon> {{ plan.uebungen_count }} Übungen</span>
+                <span><mat-icon inline>trending_up</mat-icon> +{{ plan.gewicht_steigerung }} kg</span>
+              </div>
+            </div>
+            <div class="plan-actions">
+              <button mat-icon-button color="warn" (click)="deletePlan(plan, $event)" aria-label="Löschen">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+              <mat-icon class="chevron">chevron_right</mat-icon>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+  </div>
+</div>

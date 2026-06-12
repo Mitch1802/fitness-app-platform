@@ -1,0 +1,18 @@
+﻿    <mat-card [class]="cardClass">
+      <ng-content select="imr-card-header"></ng-content>
+
+      <ng-template #cardBody>
+        <ng-content></ng-content>
+      </ng-template>
+
+      @if (wrapContent) {
+        <mat-card-content>
+          <ng-container [ngTemplateOutlet]="cardBody"></ng-container>
+        </mat-card-content>
+      } @else {
+        <ng-container [ngTemplateOutlet]="cardBody"></ng-container>
+      }
+    </mat-card>
+  
+
+
