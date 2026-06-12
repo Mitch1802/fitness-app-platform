@@ -1,0 +1,27 @@
+@use '@angular/material' as mat
+@use './theme' as theme
+@use './imr-catalog'
+@import '@fontsource/roboto/400.css'
+@import '@fontsource/roboto/500.css'
+@import '@fontsource/roboto/700.css'
+
+@include mat.core()
+@include mat.all-component-themes(theme.$blaulichtcloud-theme)
+@include mat.color-variants-backwards-compatibility(theme.$blaulichtcloud-theme)
+
+*
+  box-sizing: border-box
+
+html, body
+  height: 100%
+  margin: 0
+  font-family: Roboto, "Helvetica Neue", sans-serif
+  background: #f0f4f0
+  -webkit-tap-highlight-color: transparent
+
+mat-progress-bar
+  position: fixed
+  top: 0
+  left: 0
+  right: 0
+  z-index: 9999

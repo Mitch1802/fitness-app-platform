@@ -1,0 +1,41 @@
+<div class="shell-container">
+  <header class="app-header mat-elevation-z4">
+    <span class="app-title">&#x1F3CB;&#xFE0F; FitTrack</span>
+    <span class="spacer"></span>
+    <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Benutzermenu">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #userMenu="matMenu">
+      <div class="user-menu-header">
+        <mat-icon>person</mat-icon> {{ username }}
+      </div>
+      <button mat-menu-item (click)="abmelden()">
+        <mat-icon>logout</mat-icon>
+        <span>Abmelden</span>
+      </button>
+    </mat-menu>
+  </header>
+
+  <main class="app-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <nav class="bottom-nav mat-elevation-z8">
+    <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+      <mat-icon>home</mat-icon>
+      <span>Start</span>
+    </a>
+    <a routerLink="/plaene" routerLinkActive="active" class="nav-item">
+      <mat-icon>fitness_center</mat-icon>
+      <span>Pläne</span>
+    </a>
+    <a routerLink="/session" routerLinkActive="active" class="nav-item nav-item--cta" [class.has-active]="hasActiveSession">
+      <mat-icon>play_circle</mat-icon>
+      <span>Training</span>
+    </a>
+    <a routerLink="/statistik" routerLinkActive="active" class="nav-item">
+      <mat-icon>bar_chart</mat-icon>
+      <span>Statistik</span>
+    </a>
+  </nav>
+</div>

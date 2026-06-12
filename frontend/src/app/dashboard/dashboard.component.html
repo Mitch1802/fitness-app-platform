@@ -1,0 +1,67 @@
+<div class="dashboard">
+
+  @if (activeSession) {
+    <mat-card class="active-session-card" color="warn">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="warn">play_circle</mat-icon>
+        <mat-card-title>Aktives Training</mat-card-title>
+        <mat-card-subtitle>{{ activeSession.trainingsplan_name ?? 'Freies Training' }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-actions>
+        <button mat-flat-button color="primary" (click)="continueSession()">
+          <mat-icon>arrow_forward</mat-icon> Weiter trainieren
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  }
+
+  <section class="section">
+    <h2 class="section-title">Training starten</h2>
+    <div class="plan-grid">
+      <mat-card class="plan-card" (click)="startFreesTraining()" role="button" tabindex="0">
+        <mat-card-content>
+          <mat-icon class="plan-icon">add_circle</mat-icon>
+          <p class="plan-name">Freies Training</p>
+        </mat-card-content>
+      </mat-card>
+      @for (plan of plans; track plan.id) {
+        <mat-card class="plan-card" (click)="startWithPlan(plan.id)" role="button" tabindex="0">
+          <mat-card-content>
+            <mat-icon class="plan-icon">fitness_center</mat-icon>
+            <p class="plan-name">{{ plan.name }}</p>
+            <p class="plan-meta">{{ plan.uebungen_count }} Übungen</p>
+          </mat-card-content>
+        </mat-card>
+      }
+      <mat-card class="plan-card plan-card--new" routerLink="/plaene" role="button" tabindex="0">
+        <mat-card-content>
+          <mat-icon class="plan-icon">add</mat-icon>
+          <p class="plan-name">Plan erstellen</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+
+  @if (recentSessions.length > 0) {
+    <section class="section">
+      <h2 class="section-title">Letzte Trainings</h2>
+      <div class="sessions-list">
+        @for (session of recentSessions; track session.id) {
+          <mat-card class="session-item" [routerLink]="['/session', session.id]">
+            <mat-card-content>
+              <div class="session-row">
+                <mat-icon>event</mat-icon>
+                <div class="session-info">
+                  <span class="session-plan">{{ session.trainingsplan_name ?? 'Freies Training' }}</span>
+                  <span class="session-date">{{ formatDate(session.datum) }} · {{ session.saetze_count }} Sätze</span>
+                </div>
+                <mat-icon>chevron_right</mat-icon>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    </section>
+  }
+
+</div>

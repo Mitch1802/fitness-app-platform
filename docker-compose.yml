@@ -1,0 +1,25 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/django/Dockerfile
+    volumes:
+      - sqlite_data:/app/db
+    env_file:
+      - .env
+    expose:
+      - "9999"
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    ports:
+      - "${PORT:-80}:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:

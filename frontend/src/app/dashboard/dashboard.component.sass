@@ -1,0 +1,99 @@
+.dashboard
+  padding: 16px
+  max-width: 600px
+  margin: 0 auto
+
+.active-session-card
+  margin-bottom: 24px
+  border-left: 4px solid #f44336
+  background: #fff8f8
+
+.section
+  margin-bottom: 24px
+
+.section-title
+  font-size: 16px
+  font-weight: 600
+  color: #333
+  margin: 0 0 12px
+  padding-left: 4px
+
+.plan-grid
+  display: grid
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr))
+  gap: 12px
+
+.plan-card
+  cursor: pointer
+  text-align: center
+  transition: transform 0.15s, box-shadow 0.15s
+  border-radius: 12px !important
+
+  &:hover, &:focus
+    transform: translateY(-2px)
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important
+
+  mat-card-content
+    padding: 16px 8px !important
+    display: flex
+    flex-direction: column
+    align-items: center
+    gap: 4px
+
+  &--new
+    border: 2px dashed #ccc
+    box-shadow: none !important
+    background: #fafafa
+
+.plan-icon
+  font-size: 32px
+  width: 32px
+  height: 32px
+  color: #1b5e20
+
+.plan-name
+  font-size: 13px
+  font-weight: 500
+  margin: 0
+  word-break: break-word
+
+.plan-meta
+  font-size: 11px
+  color: #888
+  margin: 0
+
+.sessions-list
+  display: flex
+  flex-direction: column
+  gap: 8px
+
+.session-item
+  cursor: pointer
+  border-radius: 10px !important
+
+  mat-card-content
+    padding: 12px !important
+
+.session-row
+  display: flex
+  align-items: center
+  gap: 12px
+
+  mat-icon:first-child
+    color: #1b5e20
+
+  mat-icon:last-child
+    color: #ccc
+    margin-left: auto
+
+.session-info
+  display: flex
+  flex-direction: column
+
+.session-plan
+  font-size: 14px
+  font-weight: 500
+
+.session-date
+  font-size: 12px
+  color: #888

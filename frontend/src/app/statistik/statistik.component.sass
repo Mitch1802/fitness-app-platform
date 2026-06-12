@@ -1,0 +1,98 @@
+.page
+  padding: 16px
+  max-width: 600px
+  margin: 0 auto
+
+.page-title
+  font-size: 20px
+  font-weight: 700
+  margin: 0 0 16px
+
+.loading, .empty-state
+  text-align: center
+  padding: 48px
+  color: #888
+
+.empty-state
+  display: flex
+  flex-direction: column
+  align-items: center
+  gap: 12px
+
+  .empty-icon
+    font-size: 64px
+    width: 64px
+    height: 64px
+    color: #ccc
+
+.chips-scroll
+  display: flex
+  gap: 8px
+  overflow-x: auto
+  padding-bottom: 8px
+  margin-bottom: 16px
+  -webkit-overflow-scrolling: touch
+
+  mat-chip-option
+    flex-shrink: 0
+
+.summary-grid
+  display: grid
+  grid-template-columns: repeat(3, 1fr)
+  gap: 8px
+  margin-bottom: 16px
+
+.stat-card
+  border-radius: 12px !important
+  text-align: center
+
+  mat-card-content
+    padding: 12px 8px !important
+
+.stat-value
+  font-size: 20px
+  font-weight: 700
+  color: #1b5e20
+
+.stat-label
+  font-size: 11px
+  color: #888
+
+.chart-card
+  margin-bottom: 16px
+  border-radius: 12px !important
+
+.chart-container
+  height: 240px
+  position: relative
+
+.no-chart
+  color: #888
+  text-align: center
+  padding: 24px
+
+.detail-card
+  border-radius: 12px !important
+  margin-bottom: 16px
+
+  mat-card-content
+    padding: 0 !important
+
+.detail-table
+  width: 100%
+  border-collapse: collapse
+  font-size: 13px
+
+  th
+    background: #f5f5f5
+    padding: 8px 12px
+    text-align: left
+    font-weight: 600
+    color: #555
+
+  td
+    padding: 8px 12px
+    border-bottom: 1px solid #f0f0f0
+
+  tbody tr:last-child td
+    border-bottom: none

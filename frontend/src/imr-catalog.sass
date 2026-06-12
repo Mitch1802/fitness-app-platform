@@ -1,0 +1,812 @@
+// -----------------------------------------------------------------------------
+// imr-catalog.sass - IMR UI catalog, design tokens and component styles
+//
+// Central styling source for the IMR UI library.
+// Imported by styles.sass and defines:
+//   - CSS custom properties for IMR components
+//   - Material Design 3 overrides for Angular Material elements
+//   - Layout helpers such as grids and utilities
+//
+// IMR components should primarily be styled through CSS variables.
+// -----------------------------------------------------------------------------
+@use './theme' as theme
+
+// ------------------------------------------------------------------------------
+// 1. IMR design tokens and CSS custom properties
+// ------------------------------------------------------------------------------
+
+:root
+    // -- Farben --------------------------------------------------------------
+    --imr-primary:            #{theme.$imr-primary}
+    --imr-accent:             #{theme.$imr-secondary}
+    --imr-accent-soft:        #{theme.$imr-secondary-light}
+    --imr-error:              #{theme.$imr-error}
+    --imr-success:            #{theme.$imr-success}
+    --imr-warning:            #{theme.$imr-warning}
+
+    // -- Surfaces -------------------------------------------------------------
+    --imr-background:         #{theme.$imr-background}
+    --imr-surface:            #{theme.$imr-surface}
+    --imr-surface-variant:    #{theme.$imr-surface-variant}
+    --imr-border:             #{theme.$imr-border}
+    --imr-text:               #{theme.$imr-text}
+    --imr-text-muted:         #{theme.$imr-text-muted}
+
+    // -- Steuerelemente (Buttons, Chips) --------------------------------------
+    --imr-control-radius:     0
+    --imr-control-height:     56px
+    --imr-control-bg:         #{theme.$imr-surface}
+    --imr-control-border:     #{rgba(theme.$imr-border, 1)}
+    --imr-control-transition: transform .14s ease, box-shadow .14s ease, background-color .14s ease, border-color .14s ease
+
+    // -- Cards ----------------------------------------------------------------
+    --imr-card-radius:        0
+    --imr-card-border:        #{rgba(theme.$imr-border, .9)}
+    --imr-card-bg:            #{theme.$imr-surface}
+    --imr-card-shadow:        0 1px 4px rgba(0, 0, 0, .1)
+    --imr-card-padding:       .5rem .65rem .45rem
+    --imr-card-padding-mobile: .35rem .4rem .3rem
+
+    // -- Seiten-Layout --------------------------------------------------------
+    --imr-page-max-width:     #{theme.$imr-page-max-width}
+    --imr-page-padding:       .75rem .85rem 1.35rem
+    --imr-page-padding-mobile: .6rem .65rem 1.1rem
+
+    // -- Header / Navigation --------------------------------------------------
+    --imr-header-height:      52px
+    --imr-header-bg:          #{theme.$imr-primary}
+    --imr-header-shadow:      rgba(0, 0, 0, .08)
+    --imr-breadcrumb-bg:      #{theme.$imr-background}
+
+    // -- Tabellen -------------------------------------------------------------
+    --imr-table-header-bg:    #f7f7f7
+    --imr-table-row-even-bg:  #{theme.$imr-surface}
+    --imr-table-row-hover-bg: #f5f7fb
+    --imr-table-border:       #d9d9d9
+
+    // -- Grid -----------------------------------------------------------------
+    --imr-grid-columns:       12
+    --imr-grid-row-gap:       1rem
+    --imr-grid-col-gap:       1rem
+
+    // -- Material MDC Shape-Overrides -----------------------------------------
+    --mdc-shape-small:        0px
+    --mdc-shape-medium:       0px
+    --mdc-shape-large:        0px
+    --mdc-chip-container-shape-radius: 0px
+    --mat-chip-container-shape-radius: 0px
+    --mat-chip-with-avatar-avatar-shape-radius: 0px
+    --mat-card-container-shape: 0px
+    --mat-menu-container-shape: 0px
+    --mdc-dialog-container-shape: 0px
+    --mdc-snackbar-container-shape: 0px
+    --mat-select-container-elevation-shadow: none
+    --mat-autocomplete-container-shape: 0px
+    --mdc-outlined-text-field-container-shape: 0px
+    --mdc-filled-text-field-container-shape: 0px
+
+// ------------------------------------------------------------------------------
+// 2. IMR component styles for imr-* hosts and wrapper classes
+// ------------------------------------------------------------------------------
+
+.imr-full-width
+    width: 100%
+
+@media only screen and (min-width: 768px)
+    .imr-grid .imr-col-lg-12.mb-3
+        margin-bottom: .6rem !important
+
+@media only screen and (max-width: 700px)
+    .imr-grid
+        padding: .75rem
+
+.imr-top-actions
+    display: flex
+    align-items: center
+    gap: .8rem
+    flex-wrap: wrap
+    margin: 0 0 1rem
+
+    > .mat-mdc-button-base,
+    > a.mat-mdc-button-base,
+    > [mat-flat-button],
+    > [mat-stroked-button],
+    > [mat-raised-button],
+    > [mat-button],
+    > [mat-icon-button]
+        min-height: var(--imr-control-height)
+        height: var(--imr-control-height)
+
+@media only screen and (max-width: 768px)
+    .imr-top-actions
+        button,
+        a[mat-flat-button]
+            width: 100%
+
+.imr-table-wrap
+    overflow-x: auto
+    border-radius: 0
+    box-shadow: none
+
+    > .mat-mdc-paginator
+        margin-top: 1rem !important
+
+.imr-table-toolbar
+    display: flex
+    align-items: center
+    justify-content: space-between
+    gap: 1rem
+    margin: 1rem 0 1rem !important
+
+    .filter-field,
+    > .mat-mdc-form-field,
+    > mat-form-field
+        width: min(360px, 100%)
+
+.imr-table-actions-head,
+.mat-column-actions
+    width: 8.6rem
+    min-width: 8.6rem
+
+.imr-table-empty-cell
+    padding: 1rem .5rem !important
+
+.imr-table-empty-state
+    display: grid
+    justify-items: center
+    gap: .22rem
+    margin: .2rem 0 .45rem
+    padding: .7rem .65rem
+    border-radius: 0
+    border: 1px dashed color-mix(in srgb, var(--imr-border) 88%, transparent)
+    text-align: center
+
+    &.compact
+        margin-top: .6rem
+        padding: .75rem .65rem
+
+.imr-table-empty-icon
+    width: 1.25rem
+    height: 1.25rem
+    font-size: 1.25rem
+    color: color-mix(in srgb, var(--imr-primary) 75%, transparent)
+
+.imr-table-empty-title
+    font-weight: 700
+    color: color-mix(in srgb, var(--imr-primary) 90%, transparent)
+
+.imr-table-empty-copy
+    font-size: .84rem
+    color: color-mix(in srgb, var(--imr-text-muted) 95%, transparent)
+
+.imr-action-cell
+    display: flex
+    column-gap: .35rem
+    row-gap: .12rem
+    align-items: center
+
+td.imr-action-cell
+    display: table-cell
+    vertical-align: middle
+    white-space: nowrap
+
+    .mat-icon
+        margin: 0
+        font-size: 20px
+        width: 20px
+        height: 20px
+        line-height: 20px
+
+    > .mat-mdc-button-base,
+    > a.mat-mdc-button-base,
+    > [mat-flat-button],
+    > [mat-stroked-button],
+    > [mat-raised-button],
+    > [mat-button],
+    > [mat-icon-button],
+    > .imr-action-btn
+        min-width: var(--imr-control-height)
+        width: var(--imr-control-height)
+        min-height: var(--imr-control-height)
+        height: var(--imr-control-height)
+        padding: 0
+        box-shadow: none
+
+.imr-action-btn
+    min-width: var(--imr-control-height)
+    width: var(--imr-control-height)
+    height: var(--imr-control-height)
+    padding: 0
+
+@media only screen and (max-width: 700px)
+    .imr-table-toolbar
+        flex-direction: column
+        align-items: stretch
+
+        .filter-field,
+        > .mat-mdc-form-field,
+        > mat-form-field
+            width: 100%
+
+@media (max-width: 768px)
+    .mat-mdc-header-cell,
+    .mat-mdc-cell
+        font-size: .86rem
+
+    .imr-table-empty-cell
+        padding: .8rem .3rem !important
+
+    td.imr-action-cell
+        display: flex
+        flex-wrap: wrap
+        align-items: center
+        column-gap: .35rem
+        row-gap: .12rem
+        white-space: normal
+
+        > * + *
+            margin-left: 0
+
+.mat-mdc-table
+    border: 1px solid var(--imr-table-border)
+    border-radius: 0
+    overflow: hidden
+    box-shadow: none
+
+    .mat-mdc-header-row
+        background: var(--imr-primary)
+        border-bottom: 1px solid color-mix(in srgb, var(--imr-primary) 90%, transparent)
+
+    .mat-mdc-header-cell
+        color: #fff
+        font-weight: 600
+        letter-spacing: .02em
+        font-size: .74rem
+        line-height: 1.2
+        padding: .68rem .8rem
+        background-color: #fff
+
+    .mat-sort-header-arrow
+        color: rgba(#fff, .8)
+
+    .mat-mdc-cell
+        color: var(--imr-text)
+        font-size: .88rem
+        line-height: 1.35
+        padding: 0 .8rem
+        border-bottom: 1px solid color-mix(in srgb, var(--imr-border) 65%, transparent)
+
+    .mat-mdc-row
+        min-height: 44px
+
+    .mat-mdc-header-row
+        min-height: 42px
+
+        &:last-child .mat-mdc-cell
+            border-bottom: 0
+
+// -- upload / preview helpers -----------------------------------------------
+.upload-row
+    display: flex
+    align-items: center
+    gap: .6rem
+    flex-wrap: wrap
+
+.upload-label
+    font-weight: 600
+    color: var(--imr-primary)
+
+.file-input-hidden
+    position: absolute
+    width: 1px
+    height: 1px
+    padding: 0
+    margin: -1px
+    overflow: hidden
+    clip: rect(0, 0, 0, 0)
+    border: 0
+
+.file-name
+    font-size: .88rem
+    opacity: .85
+
+.preview-grid
+    display: grid
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr))
+    gap: .6rem
+    margin-top: .6rem
+
+.preview-card
+    border: 1px solid color-mix(in srgb, var(--imr-border) 95%, transparent)
+    border-radius: 0
+    background: color-mix(in srgb, var(--imr-surface) 94%, transparent)
+    overflow: hidden
+    box-shadow: none
+
+.preview-image
+    width: 100%
+    height: 120px
+    object-fit: cover
+    display: block
+
+.preview-file
+    height: 120px
+    display: flex
+    align-items: center
+    justify-content: center
+    font-weight: 600
+    color: var(--imr-primary)
+
+.preview-meta
+    display: flex
+    align-items: center
+    justify-content: flex-end
+    gap: .2rem
+    padding: .45rem
+    border-top: 1px solid color-mix(in srgb, var(--imr-border) 72%, transparent)
+
+    a,
+    span
+        font-size: .8rem
+        overflow: hidden
+        text-overflow: ellipsis
+        white-space: nowrap
+
+.existing-previews
+    margin-top: .4rem
+
+.photo-preview,
+.room-photo-preview
+    display: block
+    width: 100%
+    max-width: 340px
+    max-height: 200px
+    object-fit: cover
+    border-radius: 0
+    border: 1px solid color-mix(in srgb, var(--imr-border) 95%, transparent)
+    background: color-mix(in srgb, var(--imr-surface) 94%, transparent)
+
+.image-preview-tile
+    display: inline-grid
+    align-items: center
+    width: 176px
+    height: 112px
+    padding: .25rem
+    border: 1px solid color-mix(in srgb, var(--imr-border) 95%, transparent)
+    background: color-mix(in srgb, var(--imr-surface) 94%, transparent)
+    overflow: hidden
+    box-shadow: none
+    cursor: pointer
+    transition: border-color .16s ease, background-color .16s ease
+
+    &:hover
+        border-color: color-mix(in srgb, var(--imr-primary) 38%, transparent)
+
+    img
+        width: 100%
+        height: 100%
+        object-fit: cover
+        display: block
+
+.upload-button[mat-flat-button],
+.imr-action-btn
+    display: inline-flex
+    align-items: center
+    justify-content: center
+    gap: .35rem
+
+    .mat-icon,
+    mat-icon
+        margin: 0
+        flex-shrink: 0
+
+.upload-button[mat-flat-button]
+    min-height: var(--imr-control-height)
+    height: var(--imr-control-height)
+
+// -- imr-transaction (Buchungs-Dialog) ----------------------------------------
+.imr-transaction-backdrop
+    position: fixed
+    inset: 0
+    z-index: 1200
+    display: flex
+    align-items: center
+    justify-content: center
+    padding: 1rem
+    background: color-mix(in srgb, var(--imr-primary) 50%, transparent)
+    backdrop-filter: blur(6px)
+
+.imr-transaction-dialog
+    width: min(680px, 100%)
+    max-height: calc(100vh - 2rem)
+    overflow: auto
+    border-radius: 0
+    border: 1px solid color-mix(in srgb, var(--imr-border) 86%, transparent)
+    background: var(--imr-surface)
+    box-shadow: 0 14px 34px rgba(0, 0, 0, .18)
+    padding: 1rem
+    animation: imr-dialog-enter .18s ease-out
+
+.imr-transaction-head
+    display: flex
+    align-items: center
+    justify-content: space-between
+    margin-bottom: .85rem
+    padding-bottom: .75rem
+    border-bottom: 1px solid color-mix(in srgb, var(--imr-border) 78%, transparent)
+
+    h3
+        margin: 0
+        color: var(--imr-primary)
+        font-size: 1.08rem
+
+.imr-transaction-meta
+    margin: .2rem 0
+    padding: .7rem .8rem
+    border-radius: 0
+    border: 1px solid color-mix(in srgb, var(--imr-border) 80%, transparent)
+    background: color-mix(in srgb, var(--imr-primary) 14%, transparent)
+    color: color-mix(in srgb, var(--imr-primary) 90%, transparent)
+
+.imr-transaction-form
+    margin-top: .85rem
+
+.imr-transaction-note
+    margin: .2rem 0 .8rem
+    padding: .7rem .8rem
+    border-radius: 0
+    background: color-mix(in srgb, var(--imr-surface-variant) 40%, transparent)
+    font-size: .9rem
+    color: color-mix(in srgb, var(--imr-primary) 84%, transparent)
+
+.imr-transaction-actions
+    display: flex
+    justify-content: flex-end
+    gap: .6rem
+    margin-top: .9rem
+    padding-top: .85rem
+    border-top: 1px solid color-mix(in srgb, var(--imr-border) 74%, transparent)
+
+@keyframes imr-dialog-enter
+    from
+        opacity: 0
+        transform: translateY(10px) scale(.985)
+    to
+        opacity: 1
+        transform: translateY(0) scale(1)
+
+// -- atemschutz-template helpers -------------------------------------------
+.atemschutz-geraete-page,
+.atemschutz-masken-page,
+.atemschutz-messgeraete-page
+    .imr-grid
+        > [class*='imr-col-']
+            margin-bottom: .55rem !important
+
+        > div > mat-checkbox
+            width: 100%
+            box-sizing: border-box
+            min-height: var(--imr-control-height)
+            padding: .35rem .65rem
+            border: 1px solid var(--imr-control-border)
+            border-radius: var(--imr-control-radius)
+            background: var(--imr-control-bg)
+            display: flex
+            align-items: center
+
+    .checkbox-divider
+        grid-column: 1 / -1
+        width: 100%
+        margin: .45rem 0
+        border: 0
+        border-top: 1px solid var(--imr-control-border)
+
+    .checkbox-triplet
+        margin-bottom: 0 !important
+
+    .pruefung-overview
+        display: flex
+        flex-direction: column
+        gap: .15rem
+        line-height: 1.2
+
+        span
+            white-space: nowrap
+
+@media (max-width: 768px)
+    .atemschutz-geraete-page,
+    .atemschutz-masken-page,
+    .atemschutz-messgeraete-page
+        .imr-grid
+            > div > mat-checkbox
+                padding: .45rem .6rem
+
+.atemschutz-dienstbuch-page
+    .table-filter-compact
+        max-width: 320px
+
+// ------------------------------------------------------------------------------
+// 3. Grid-System
+// ------------------------------------------------------------------------------
+
+.container, .app-container
+    width: min(1280px, 100%)
+    margin-left: auto
+    margin-right: auto
+    padding-left: 1rem
+    padding-right: 1rem
+
+.row, .imr-grid
+    display: grid
+    grid-template-columns: repeat(var(--imr-grid-columns), minmax(0, 1fr))
+    gap: var(--imr-grid-row-gap) var(--imr-grid-col-gap)
+    margin: 0
+
+@media (max-width: 768px)
+    .row, .imr-grid
+        margin-left: 0
+        margin-right: 0
+
+.row > :where([class*='col-']),
+.row > :where([class*='imr-col-']),
+.row > :where(.col),
+.imr-grid > :where([class*='col-']),
+.imr-grid > :where([class*='imr-col-']),
+.imr-grid > :where(.col),
+.imr-grid > :where(.imr-col)
+    grid-column: span 12
+    min-width: 0
+
+.row.justify-content-center > :where([class*='col-']),
+.row.justify-content-center > :where([class*='imr-col-']),
+.row.justify-content-center > :where(.col),
+.imr-grid.justify-content-center > :where([class*='col-']),
+.imr-grid.justify-content-center > :where([class*='imr-col-']),
+.imr-grid.justify-content-center > :where(.col),
+.imr-grid.justify-content-center > :where(.imr-col)
+    justify-self: center
+
+.row.align-items-center, .imr-grid.align-items-center
+    align-items: center
+
+.row.align-items-end, .imr-grid.align-items-end
+    align-items: end
+
+.imr-col
+    grid-column: span 12
+
+.imr-col-auto
+    grid-column: auto
+
+.imr-col-1
+    grid-column: span 1
+
+.imr-col-2
+    grid-column: span 2
+
+.imr-col-3
+    grid-column: span 3
+
+.imr-col-4
+    grid-column: span 4
+
+.imr-col-5
+    grid-column: span 5
+
+.imr-col-6
+    grid-column: span 6
+
+.imr-col-7
+    grid-column: span 7
+
+.imr-col-8
+    grid-column: span 8
+
+.imr-col-9
+    grid-column: span 9
+
+.imr-col-10
+    grid-column: span 10
+
+.imr-col-11
+    grid-column: span 11
+
+.imr-col-12
+    grid-column: span 12
+
+@media (min-width: 768px)
+    .imr-col-md-1
+        grid-column: span 1
+    
+    .imr-col-md-2
+        grid-column: span 2
+
+    .imr-col-md-3
+        grid-column: span 3
+    
+    .imr-col-md-4
+        grid-column: span 4
+    
+    .imr-col-md-5
+        grid-column: span 5
+
+    .imr-col-md-6
+        grid-column: span 6
+
+    .imr-col-md-7
+        grid-column: span 7
+
+    .imr-col-md-8
+        grid-column: span 8
+
+    .imr-col-md-9
+        grid-column: span 9
+
+    .imr-col-md-10
+        grid-column: span 10
+
+    .imr-col-md-11
+        grid-column: span 11
+
+    .imr-col-md-12
+        grid-column: span 12
+
+@media (min-width: 1200px)
+    .imr-col-lg-1
+        grid-column: span 1
+
+    .imr-col-lg-2
+        grid-column: span 2
+
+    .imr-col-lg-3
+        grid-column: span 3
+
+    .imr-col-lg-4
+        grid-column: span 4
+
+    .imr-col-lg-5
+        grid-column: span 5
+
+    .imr-col-lg-6
+        grid-column: span 6
+
+    .imr-col-lg-7
+        grid-column: span 7
+
+    .imr-col-lg-8
+        grid-column: span 8
+
+    .imr-col-lg-9
+        grid-column: span 9
+
+    .imr-col-lg-10
+        grid-column: span 10
+
+    .imr-col-lg-11
+        grid-column: span 11
+
+    .imr-col-lg-12
+        grid-column: span 12
+
+
+// ------------------------------------------------------------------------------
+// 4. Utility-Klassen
+// ------------------------------------------------------------------------------
+
+.text-center
+    text-align: center
+
+.text-end
+    text-align: end
+
+.filter-field
+    width: min(360px, 100%)
+
+.m-0
+    margin: 0 !important
+
+.m-2
+    margin: .5rem !important
+
+.m-3
+    margin: 1rem !important
+
+.mx-0
+    margin-left: 0 !important
+    margin-right: 0 !important
+
+.my-2
+    margin-top: .5rem !important
+    margin-bottom: .5rem !important
+
+.mt-2
+    margin-top: .5rem !important
+
+.mt-3
+    margin-top: 1rem !important
+
+.mb-0
+    margin-bottom: 0 !important
+
+.mb-2
+    margin-bottom: .5rem !important
+
+.mb-3
+    margin-bottom: 1rem !important
+
+.me-2
+    margin-right: .5rem !important
+
+.me-3
+    margin-right: 1rem !important
+
+.ms-2
+    margin-left: .5rem !important
+
+.p-0
+    padding: 0 !important
+
+.p-2
+    padding: .5rem !important
+
+.pt-2
+    padding-top: .5rem !important
+
+.pt-3
+    padding-top: 1rem !important
+
+.ps-3
+    padding-left: 1rem !important
+
+.autocomplete-multi
+    display: flex
+    flex-direction: column
+    gap: .25rem
+
+.selection-description
+    margin: -.2rem 0 0
+    font-size: .8rem
+    opacity: .72
+
+.selection-counter
+    font-size: .78rem
+    opacity: .72
+    margin-left: .25rem
+
+
+// ------------------------------------------------------------------------------
+// 7. Responsive Overrides
+// ------------------------------------------------------------------------------
+
+@media only screen and (min-width: 768px)
+    // Reserviert fÃ¼r desktop-spezifische globale Grid-Erweiterungen.
+
+@media only screen and (max-width: 700px)
+    .actions-row
+        button
+            width: 100%
+
+    .password-action, .actions-row.imr-full-width
+        align-items: stretch
+
+    .imr-lending-panel-head
+        flex-direction: column
+        align-items: stretch
+
+    .imr-lending-row-remove
+        justify-content: stretch
+
+        button
+            width: 100%
+
+    .imr-transaction-actions
+        flex-direction: column
+
+        button
+            width: 100%
+
+@media (max-width: 768px)
+    .mat-mdc-card
+        border-radius: 0
+
+

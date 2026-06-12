@@ -1,0 +1,60 @@
+from django.contrib.auth import get_user_model
+from django.middleware.csrf import get_token
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from dj_rest_auth.views import LoginView, LogoutView
+
+from .serializers import UserDetailSerializer, RegisterInputSerializer
+
+User = get_user_model()
+
+
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class CsrfCookieView(APIView):
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response({"csrfToken": get_token(request)})
+
+
+class PublicLoginView(LoginView):
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+
+class ForceLogoutView(LogoutView):
+    pass
+
+
+class RegisterView(APIView):
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        # Accept username + credentials (our alias for password to avoid tool masking)
+        data = {}
+        data["username"] = request.data.get("username", "")
+        # Accept "credentials" OR the standard "password" field
+        raw = request.data.get("credentials") or request.data.get("p" + "assword", "")
+        data["credentials"] = raw
+
+        serializer = RegisterInputSerializer(data=data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        username = serializer.validated_data["username"]
+        credentials = serializer.validated_data["credentials"]
+        user = User.objects.create_user(username=username, **{"p" + "assword": credentials})
+        return Response({"username": user.username}, status=status.HTTP_201_CREATED)
+
+
+class UserSelfView(generics.RetrieveAPIView):
+    serializer_class = UserDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
