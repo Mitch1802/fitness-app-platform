@@ -1,25 +1,37 @@
-from decimal import Decimal
 from rest_framework import serializers
 from .models import Trainingsplan, Uebung, TrainingSession, SatzErgebnis, ExtraUebung
 
 
 class UebungSerializer(serializers.ModelSerializer):
     vorgaenger_name = serializers.SerializerMethodField()
+    nachfolger_id = serializers.SerializerMethodField()
+    nachfolger_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Uebung
         fields = [
             "id", "trainingsplan", "name", "saetze", "hinweis",
-            "gewicht", "vorgaenger", "vorgaenger_name", "reihenfolge",
+            "gewicht", "gewicht_steigerung", "vorgaenger", "vorgaenger_name",
+            "nachfolger_id", "nachfolger_name", "reihenfolge",
         ]
-        read_only_fields = ["id", "vorgaenger_name"]
+        read_only_fields = ["id", "vorgaenger_name", "nachfolger_id", "nachfolger_name"]
 
     def get_vorgaenger_name(self, obj):
         if obj.vorgaenger:
             return obj.vorgaenger.name
         return None
 
+    def get_nachfolger_id(self, obj):
+        nachfolger = obj.nachfolger.order_by("reihenfolge", "id").first()
+        return nachfolger.id if nachfolger else None
+
+    def get_nachfolger_name(self, obj):
+        nachfolger = obj.nachfolger.order_by("reihenfolge", "id").first()
+        return nachfolger.name if nachfolger else None
+
     def validate_saetze(self, value):
+        if value in (None, ""):
+            return []
         if not isinstance(value, list):
             raise serializers.ValidationError("Muss eine Liste sein.")
         for item in value:
@@ -31,6 +43,39 @@ class UebungSerializer(serializers.ModelSerializer):
                 )
         return value
 
+    def validate(self, attrs):
+        plan = attrs.get("trainingsplan") or getattr(self.instance, "trainingsplan", None)
+        vorgaenger = attrs.get("vorgaenger")
+
+        if self.instance and vorgaenger and vorgaenger.pk == self.instance.pk:
+            raise serializers.ValidationError({"vorgaenger": "Eine Übung kann nicht ihr eigener Vorgänger sein."})
+
+        if plan and vorgaenger and vorgaenger.trainingsplan_id != plan.id:
+            raise serializers.ValidationError({"vorgaenger": "Der Vorgänger muss aus demselben Trainingsplan stammen."})
+
+        return attrs
+
+    def create(self, validated_data):
+        validated_data.setdefault("saetze", [])
+        if validated_data.get("gewicht_steigerung") is None:
+            plan = validated_data.get("trainingsplan")
+            if plan:
+                validated_data["gewicht_steigerung"] = plan.gewicht_steigerung
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        if "saetze" in validated_data and validated_data.get("saetze") is None:
+            validated_data["saetze"] = []
+        if "gewicht_steigerung" in validated_data and validated_data.get("gewicht_steigerung") is None:
+            validated_data["gewicht_steigerung"] = instance.trainingsplan.gewicht_steigerung
+        return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if not isinstance(data.get("saetze"), list):
+            data["saetze"] = []
+        return data
+
 
 class TrainingsplanSerializer(serializers.ModelSerializer):
     uebungen = UebungSerializer(many=True, read_only=True)
@@ -39,7 +84,7 @@ class TrainingsplanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Trainingsplan
         fields = [
-            "id", "name", "beschreibung", "gewicht_steigerung",
+            "id", "name", "beschreibung", "aufwaermen", "gewicht_steigerung",
             "ist_aktiv", "erstellt_am", "aktualisiert_am",
             "uebungen", "uebungen_count",
         ]
@@ -55,7 +100,7 @@ class TrainingsplanListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Trainingsplan
         fields = [
-            "id", "name", "beschreibung", "gewicht_steigerung",
+            "id", "name", "beschreibung", "aufwaermen", "gewicht_steigerung",
             "ist_aktiv", "erstellt_am", "aktualisiert_am", "uebungen_count",
         ]
         read_only_fields = ["id", "erstellt_am", "aktualisiert_am"]

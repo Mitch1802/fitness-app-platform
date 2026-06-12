@@ -10,8 +10,11 @@ export interface Uebung {
   saetze: Satz[];
   hinweis: string;
   gewicht: number;
+  gewicht_steigerung: number | null;
   vorgaenger: number | null;
   vorgaenger_name: string | null;
+  nachfolger_id: number | null;
+  nachfolger_name: string | null;
   reihenfolge: number;
 }
 
@@ -19,6 +22,7 @@ export interface Trainingsplan {
   id: number;
   name: string;
   beschreibung: string;
+  aufwaermen: string;
   gewicht_steigerung: number;
   ist_aktiv: boolean;
   erstellt_am: string;
@@ -31,6 +35,7 @@ export interface TrainingsplanList {
   id: number;
   name: string;
   beschreibung: string;
+  aufwaermen: string;
   gewicht_steigerung: number;
   ist_aktiv: boolean;
   erstellt_am: string;

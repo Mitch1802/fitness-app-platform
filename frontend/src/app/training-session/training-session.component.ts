@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -9,28 +9,23 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { TrainingSessionService } from '../_service/training-session.service';
 import { TrainingsplanService } from '../_service/trainingsplan.service';
-import { TrainingSession, SatzErgebnis, ExtraUebung } from '../_interface/training-session';
-import { Uebung } from '../_interface/trainingsplan';
-import { finalize, switchMap } from 'rxjs';
+import { TrainingSession, SatzErgebnis } from '../_interface/training-session';
+import { Trainingsplan, Uebung } from '../_interface/trainingsplan';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-training-session',
   templateUrl: './training-session.component.html',
   styleUrls: ['./training-session.component.sass'],
   imports: [
-    CommonModule, ReactiveFormsModule, RouterLink, DecimalPipe,
+    CommonModule, ReactiveFormsModule, DecimalPipe,
     MatCardModule, MatButtonModule, MatIconModule,
     MatInputModule, MatFormFieldModule, MatCheckboxModule,
-    MatChipsModule, MatExpansionModule, MatDividerModule,
-    MatDialogModule, MatSelectModule, MatTabsModule,
+    MatChipsModule, MatTabsModule,
   ],
 })
 export class TrainingSessionComponent implements OnInit {
@@ -42,17 +37,15 @@ export class TrainingSessionComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   session: TrainingSession | null = null;
+  plan: Trainingsplan | null = null;
   uebungen: Uebung[] = [];
   loading = true;
   abschliessen_saving = false;
 
-  // Satz tracking
   satzForm!: FormGroup;
   selectedUebungId: number | null = null;
-  selectedSatzNr = 1;
   showSatzForm = false;
 
-  // Extra exercise
   extraForm!: FormGroup;
   showExtraForm = false;
 
@@ -63,7 +56,6 @@ export class TrainingSessionComponent implements OnInit {
     if (idParam) {
       this.loadSession(Number(idParam));
     } else {
-      // Check for active session
       this.service.getAktiv().subscribe({
         next: (s) => {
           if (s) {
@@ -80,12 +72,18 @@ export class TrainingSessionComponent implements OnInit {
   loadSession(id: number): void {
     this.service.get(id).subscribe({
       next: (session) => {
-        this.session = session;
+        this.session = this.normalizeSession(session);
         this.loading = false;
         if (session.trainingsplan) {
           this.planService.get(session.trainingsplan).subscribe({
-            next: (plan) => (this.uebungen = plan.uebungen),
+            next: (plan) => {
+              this.plan = this.normalizePlan(plan);
+              this.uebungen = this.plan.uebungen;
+            },
           });
+        } else {
+          this.plan = null;
+          this.uebungen = [];
         }
       },
     });
@@ -110,7 +108,6 @@ export class TrainingSessionComponent implements OnInit {
     });
   }
 
-  // Group satz ergebnisse by exercise
   get ergebnisseByUebung(): { uebung_name: string; uebung_id: number | null; saetze: SatzErgebnis[] }[] {
     if (!this.session) return [];
     const map = new Map<string, { uebung_name: string; uebung_id: number | null; saetze: SatzErgebnis[] }>();
@@ -122,6 +119,15 @@ export class TrainingSessionComponent implements OnInit {
       map.get(key)!.saetze.push(s);
     }
     return Array.from(map.values());
+  }
+
+  get selectedUebung(): Uebung | null {
+    return this.uebungen.find(uebung => uebung.id === this.selectedUebungId) ?? null;
+  }
+
+  get selectedSteigerungText(): string {
+    const steigerung = this.selectedUebung?.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? null;
+    return steigerung === null || steigerung === undefined ? 'x' : String(steigerung);
   }
 
   selectUebung(uebung: Uebung): void {
@@ -162,7 +168,6 @@ export class TrainingSessionComponent implements OnInit {
       next: (satz) => {
         this.session!.satz_ergebnisse.push(satz);
         this.snackBar.open(`Satz ${satz.satz_nummer} gespeichert!`, '', { duration: 1500 });
-        // Prepare for next set
         this.satzForm.patchValue({ satz_nummer: satz.satz_nummer + 1, gewicht_erhoehen: false });
       },
     });
@@ -221,5 +226,27 @@ export class TrainingSessionComponent implements OnInit {
 
   formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+
+  private normalizeSession(session: TrainingSession): TrainingSession {
+    return {
+      ...session,
+      satz_ergebnisse: Array.isArray(session.satz_ergebnisse) ? session.satz_ergebnisse : [],
+      extra_uebungen: Array.isArray(session.extra_uebungen) ? session.extra_uebungen : [],
+    };
+  }
+
+  private normalizePlan(plan: Trainingsplan): Trainingsplan {
+    return {
+      ...plan,
+      aufwaermen: typeof plan.aufwaermen === 'string' ? plan.aufwaermen : '',
+      uebungen: Array.isArray(plan.uebungen)
+        ? plan.uebungen.map(uebung => ({
+            ...uebung,
+            saetze: Array.isArray(uebung.saetze) ? uebung.saetze : [],
+            gewicht_steigerung: uebung.gewicht_steigerung ?? plan.gewicht_steigerung,
+          }))
+        : [],
+    };
   }
 }

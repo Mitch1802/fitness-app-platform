@@ -9,12 +9,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { TrainingsplanService } from '../../_service/trainingsplan.service';
 import { Trainingsplan, Uebung, Satz } from '../../_interface/trainingsplan';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin, Observable, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-trainingsplan-detail',
@@ -24,7 +23,7 @@ import { finalize } from 'rxjs';
     CommonModule, ReactiveFormsModule, RouterLink,
     MatCardModule, MatButtonModule, MatIconModule,
     MatInputModule, MatFormFieldModule, MatSelectModule,
-    MatExpansionModule, MatDividerModule,
+    MatDividerModule,
   ],
 })
 export class TrainingsplanDetailComponent implements OnInit {
@@ -64,9 +63,9 @@ export class TrainingsplanDetailComponent implements OnInit {
         this.editingUebungId = null;
         this.service.get(Number(id)).subscribe({
           next: (plan) => {
-            this.plan = plan;
+            this.plan = this.normalizePlan(plan);
             this.loading = false;
-            this.initPlanForm(plan);
+            this.initPlanForm(this.plan);
           },
         });
       }
@@ -77,6 +76,7 @@ export class TrainingsplanDetailComponent implements OnInit {
   initPlanForm(plan: Trainingsplan | null): void {
     this.planForm = this.fb.group({
       name: [plan?.name ?? '', [Validators.required, Validators.maxLength(200)]],
+      aufwaermen: [plan?.aufwaermen ?? ''],
       beschreibung: [plan?.beschreibung ?? ''],
       gewicht_steigerung: [plan?.gewicht_steigerung ?? 2.5, [Validators.required, Validators.min(0.5)]],
       ist_aktiv: [plan?.ist_aktiv ?? true],
@@ -84,18 +84,18 @@ export class TrainingsplanDetailComponent implements OnInit {
   }
 
   initUebungForm(uebung: Uebung | null): void {
+    const normalizedUebung = uebung ? this.normalizeExercise(uebung) : null;
+    const initialSaetze = normalizedUebung?.saetze ?? [];
+
     this.uebungForm = this.fb.group({
-      name: [uebung?.name ?? '', [Validators.required]],
-      hinweis: [uebung?.hinweis ?? ''],
-      gewicht: [uebung?.gewicht ?? 0, [Validators.min(0)]],
-      vorgaenger: [uebung?.vorgaenger ?? null],
-      reihenfolge: [uebung?.reihenfolge ?? (this.plan?.uebungen?.length ?? 0)],
-      saetze: this.fb.array(
-        (uebung?.saetze && uebung.saetze.length > 0
-          ? uebung.saetze
-          : [{ nr: 1, wdh: 10 }]
-        ).map(s => this.satzGroup(s))
-      ),
+      name: [normalizedUebung?.name ?? '', [Validators.required]],
+      hinweis: [normalizedUebung?.hinweis ?? ''],
+      gewicht: [normalizedUebung?.gewicht ?? 0, [Validators.min(0)]],
+      gewicht_steigerung: [normalizedUebung?.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? 2.5, [Validators.required, Validators.min(0.5)]],
+      vorgaenger: [normalizedUebung?.vorgaenger ?? null],
+      nachfolger: [normalizedUebung?.nachfolger_id ?? this.findNachfolgerId(normalizedUebung?.id ?? null)],
+      reihenfolge: [normalizedUebung?.reihenfolge ?? (this.plan?.uebungen?.length ?? 0)],
+      saetze: this.fb.array(initialSaetze.map(s => this.satzGroup(s))),
     });
   }
 
@@ -114,6 +114,21 @@ export class TrainingsplanDetailComponent implements OnInit {
     return this.saetzeArray.controls;
   }
 
+  get otherUebungen(): Uebung[] {
+    const editId = this.editingUebungId;
+    return (this.plan?.uebungen ?? []).filter(u => u.id !== editId);
+  }
+
+  get predecessorOptions(): Uebung[] {
+    const nachfolgerId = this.uebungForm?.get('nachfolger')?.value ?? null;
+    return this.otherUebungen.filter(u => u.id !== nachfolgerId);
+  }
+
+  get successorOptions(): Uebung[] {
+    const vorgaengerId = this.uebungForm?.get('vorgaenger')?.value ?? null;
+    return this.otherUebungen.filter(u => u.id !== vorgaengerId);
+  }
+
   addSatz(): void {
     const len = this.saetzeArray.length;
     const lastWdh = len > 0 ? (this.saetzeArray.at(len - 1).get('wdh')?.value ?? 10) : 10;
@@ -121,10 +136,12 @@ export class TrainingsplanDetailComponent implements OnInit {
   }
 
   removeSatz(i: number): void {
-    if (this.saetzeArray.length > 1) {
-      this.saetzeArray.removeAt(i);
-      this.saetzeArray.controls.forEach((c, idx) => c.get('nr')?.setValue(idx + 1));
+    if (this.saetzeArray.length === 0) {
+      return;
     }
+
+    this.saetzeArray.removeAt(i);
+    this.saetzeArray.controls.forEach((c, idx) => c.get('nr')?.setValue(idx + 1));
   }
 
   savePlan(): void {
@@ -141,7 +158,7 @@ export class TrainingsplanDetailComponent implements OnInit {
     } else {
       this.service.update(this.plan!.id, data).pipe(finalize(() => (this.saving = false))).subscribe({
         next: (plan) => {
-          this.plan = plan;
+          this.plan = this.normalizePlan(plan);
           this.editingPlan = false;
           this.snackBar.open('Plan gespeichert', 'OK', { duration: 2000 });
         },
@@ -164,27 +181,37 @@ export class TrainingsplanDetailComponent implements OnInit {
   cancelUebung(): void {
     this.addingUebung = false;
     this.editingUebungId = null;
+    this.initUebungForm(null);
   }
 
   saveUebung(): void {
-    if (this.uebungForm.invalid || this.saving) return;
-    this.saving = true;
-    const data = this.uebungForm.value;
-    if (this.editingUebungId != null) {
-      this.service.updateUebung(this.editingUebungId, data).pipe(finalize(() => (this.saving = false))).subscribe({
-        next: () => {
-          this.cancelUebung();
-          this.refreshPlan();
-        },
-      });
-    } else {
-      this.service.createUebung(this.plan!.id, data).pipe(finalize(() => (this.saving = false))).subscribe({
-        next: () => {
-          this.cancelUebung();
-          this.refreshPlan();
-        },
-      });
+    if (this.uebungForm.invalid || this.saving || !this.plan) return;
+
+    const nachfolgerId = this.uebungForm.get('nachfolger')?.value ?? null;
+    const data = this.buildUebungPayload();
+
+    if (data.vorgaenger !== null && data.vorgaenger !== undefined && data.vorgaenger === nachfolgerId) {
+      this.snackBar.open('Vor- und Nachübung müssen unterschiedlich sein.', 'OK', { duration: 2500 });
+      return;
     }
+
+    this.saving = true;
+
+    const request$ = this.editingUebungId !== null
+      ? this.service.updateUebung(this.editingUebungId, data)
+      : this.service.createUebung(this.plan.id, data);
+
+    request$
+      .pipe(
+        switchMap((savedUebung) => this.syncNachfolger(savedUebung.id, nachfolgerId)),
+        finalize(() => (this.saving = false)),
+      )
+      .subscribe({
+        next: () => {
+          this.cancelUebung();
+          this.refreshPlan();
+        },
+      });
   }
 
   deleteUebung(id: number): void {
@@ -196,12 +223,71 @@ export class TrainingsplanDetailComponent implements OnInit {
 
   refreshPlan(): void {
     this.service.get(this.plan!.id).subscribe({
-      next: (plan) => (this.plan = plan),
+      next: (plan) => (this.plan = this.normalizePlan(plan)),
     });
   }
 
-  get otherUebungen(): Uebung[] {
-    const editId = this.editingUebungId;
-    return (this.plan?.uebungen ?? []).filter(u => u.id !== editId);
+  private buildUebungPayload(): Partial<Uebung> {
+    const raw = this.uebungForm.getRawValue();
+    const saetze = Array.isArray(raw.saetze)
+      ? raw.saetze.map((satz: Satz, index: number) => ({ nr: index + 1, wdh: Number(satz.wdh) }))
+      : [];
+
+    return {
+      name: raw.name,
+      hinweis: raw.hinweis ?? '',
+      gewicht: Number(raw.gewicht ?? 0),
+      gewicht_steigerung: Number(raw.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? 2.5),
+      vorgaenger: raw.vorgaenger ?? null,
+      reihenfolge: Number(raw.reihenfolge ?? 0),
+      saetze,
+    };
+  }
+
+  private syncNachfolger(currentId: number, desiredNachfolgerId: number | null): Observable<unknown> {
+    const currentNachfolgerId = this.findNachfolgerId(currentId);
+    const requests: Observable<unknown>[] = [];
+
+    if (currentNachfolgerId && currentNachfolgerId !== desiredNachfolgerId) {
+      requests.push(this.service.updateUebung(currentNachfolgerId, { vorgaenger: null }));
+    }
+
+    if (desiredNachfolgerId !== null && desiredNachfolgerId !== undefined && currentNachfolgerId !== desiredNachfolgerId) {
+      requests.push(this.service.updateUebung(desiredNachfolgerId, { vorgaenger: currentId }));
+    }
+
+    return requests.length > 0 ? forkJoin(requests) : of(null);
+  }
+
+  private findNachfolgerId(uebungId: number | null): number | null {
+    if (uebungId === null || uebungId === undefined) {
+      return null;
+    }
+
+    return (this.plan?.uebungen ?? []).find(u => u.vorgaenger === uebungId)?.id ?? null;
+  }
+
+  private normalizePlan(plan: Trainingsplan): Trainingsplan {
+    return {
+      ...plan,
+      aufwaermen: typeof plan.aufwaermen === 'string' ? plan.aufwaermen : '',
+      uebungen: this.normalizeExercises(plan.uebungen),
+    };
+  }
+
+  private normalizeExercises(uebungen: unknown): Uebung[] {
+    return Array.isArray(uebungen) ? uebungen.map(uebung => this.normalizeExercise(uebung as Uebung)) : [];
+  }
+
+  private normalizeExercise(uebung: Uebung): Uebung {
+    return {
+      ...uebung,
+      saetze: Array.isArray(uebung.saetze) ? uebung.saetze : [],
+      gewicht_steigerung: uebung.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? 2.5,
+      nachfolger_id: uebung.nachfolger_id ?? null,
+      nachfolger_name: uebung.nachfolger_name ?? null,
+      vorgaenger: uebung.vorgaenger ?? null,
+      vorgaenger_name: uebung.vorgaenger_name ?? null,
+    };
   }
 }
