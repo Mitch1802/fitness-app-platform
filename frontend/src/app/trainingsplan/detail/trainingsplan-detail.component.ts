@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
@@ -32,6 +33,7 @@ export class TrainingsplanDetailComponent implements OnInit {
   private service = inject(TrainingsplanService);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
 
   plan: Trainingsplan | null = null;
   planForm!: FormGroup;
@@ -44,22 +46,32 @@ export class TrainingsplanDetailComponent implements OnInit {
   saving = false;
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id || id === 'neu') {
-      this.isNew = true;
-      this.editingPlan = true;
-      this.loading = false;
-      this.initPlanForm(null);
-    } else {
-      this.service.get(Number(id)).subscribe({
-        next: (plan) => {
-          this.plan = plan;
-          this.loading = false;
-          this.initPlanForm(plan);
-        },
-      });
-    }
-    this.initUebungForm(null);
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const id = params.get('id');
+      if (!id || id === 'neu') {
+        this.isNew = true;
+        this.editingPlan = true;
+        this.loading = false;
+        this.plan = null;
+        this.addingUebung = false;
+        this.editingUebungId = null;
+        this.initPlanForm(null);
+      } else {
+        this.isNew = false;
+        this.editingPlan = false;
+        this.loading = true;
+        this.addingUebung = false;
+        this.editingUebungId = null;
+        this.service.get(Number(id)).subscribe({
+          next: (plan) => {
+            this.plan = plan;
+            this.loading = false;
+            this.initPlanForm(plan);
+          },
+        });
+      }
+      this.initUebungForm(null);
+    });
   }
 
   initPlanForm(plan: Trainingsplan | null): void {
