@@ -44,8 +44,7 @@
                   (click)="selectUebung(uebung)">
                   <mat-card-content>
                     <span class="chip-name">{{ uebung.name }}</span>
-                    <span class="chip-weight">{{ uebung.gewicht }} kg</span>
-                    <span class="chip-increment">+{{ uebung.gewicht_steigerung ?? plan?.gewicht_steigerung }} kg</span>
+                    <span class="chip-increment">+{{ uebung.gewicht_steigerung }} kg</span>
                   </mat-card-content>
                 </mat-card>
               }
