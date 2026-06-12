@@ -57,6 +57,7 @@ open http://localhost
 | Methode | URL | Beschreibung |
 |---------|-----|--------------|
 | GET | `/api/v1/auth/csrf/` | CSRF-Token holen |
+| GET | `/api/v1/auth/status/` | Auth-Status prüfen |
 | POST | `/api/v1/auth/login/` | Anmelden |
 | POST | `/api/v1/auth/logout/` | Abmelden |
 | POST | `/api/v1/users/register/` | Registrieren |
