@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/django/Dockerfile
+    command: /start
     volumes:
       - sqlite_data:/app/db
     env_file:
