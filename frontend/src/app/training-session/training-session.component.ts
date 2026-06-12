@@ -140,12 +140,19 @@ export class TrainingSessionComponent implements OnInit {
       uebung_id: uebung.id,
       uebung_name: uebung.name,
       satz_nummer: nextSatzNr,
-      wiederholungen: 10,
+      wiederholungen: this.parseWdh(plannedSatz?.wdh),
       gewicht: plannedSatz?.gewicht ?? uebung.gewicht ?? 0,
       gewicht_erhoehen: false,
     });
     this.showSatzForm = true;
     this.showExtraForm = false;
+  }
+
+  private parseWdh(wdh: string | undefined): number {
+    if (!wdh) return 10;
+    const first = String(wdh).split(/[-\/,]/)[0].trim();
+    const parsed = parseInt(first, 10);
+    return isNaN(parsed) ? 10 : parsed;
   }
 
   getNextSatzNr(uebungId: number | null, uebungName: string): number {
