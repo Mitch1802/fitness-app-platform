@@ -17,6 +17,8 @@ import { TrainingSession, SatzErgebnis } from '../_interface/training-session';
 import { Trainingsplan, Uebung } from '../_interface/trainingsplan';
 import { finalize } from 'rxjs';
 
+const DEFAULT_WEIGHT_INCREMENT = 2.5;
+
 @Component({
   selector: 'app-training-session',
   templateUrl: './training-session.component.html',
@@ -240,11 +242,12 @@ export class TrainingSessionComponent implements OnInit {
     return {
       ...plan,
       aufwaermen: typeof plan.aufwaermen === 'string' ? plan.aufwaermen : '',
+      gewicht_steigerung: plan.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT,
       uebungen: Array.isArray(plan.uebungen)
         ? plan.uebungen.map(uebung => ({
             ...uebung,
             saetze: Array.isArray(uebung.saetze) ? uebung.saetze : [],
-            gewicht_steigerung: uebung.gewicht_steigerung ?? plan.gewicht_steigerung,
+            gewicht_steigerung: uebung.gewicht_steigerung ?? plan.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT,
           }))
         : [],
     };

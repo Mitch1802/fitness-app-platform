@@ -15,6 +15,8 @@ import { TrainingsplanService } from '../../_service/trainingsplan.service';
 import { Trainingsplan, Uebung, Satz } from '../../_interface/trainingsplan';
 import { finalize, forkJoin, Observable, of, switchMap } from 'rxjs';
 
+const DEFAULT_WEIGHT_INCREMENT = 2.5;
+
 @Component({
   selector: 'app-trainingsplan-detail',
   templateUrl: './trainingsplan-detail.component.html',
@@ -78,7 +80,7 @@ export class TrainingsplanDetailComponent implements OnInit {
       name: [plan?.name ?? '', [Validators.required, Validators.maxLength(200)]],
       aufwaermen: [plan?.aufwaermen ?? ''],
       beschreibung: [plan?.beschreibung ?? ''],
-      gewicht_steigerung: [plan?.gewicht_steigerung ?? 2.5, [Validators.required, Validators.min(0.5)]],
+      gewicht_steigerung: [plan?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT, [Validators.required, Validators.min(0.5)]],
       ist_aktiv: [plan?.ist_aktiv ?? true],
     });
   }
@@ -91,7 +93,7 @@ export class TrainingsplanDetailComponent implements OnInit {
       name: [normalizedUebung?.name ?? '', [Validators.required]],
       hinweis: [normalizedUebung?.hinweis ?? ''],
       gewicht: [normalizedUebung?.gewicht ?? 0, [Validators.min(0)]],
-      gewicht_steigerung: [normalizedUebung?.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? 2.5, [Validators.required, Validators.min(0.5)]],
+      gewicht_steigerung: [normalizedUebung?.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT, [Validators.required, Validators.min(0.5)]],
       vorgaenger: [normalizedUebung?.vorgaenger ?? null],
       nachfolger: [normalizedUebung?.nachfolger_id ?? this.findNachfolgerId(normalizedUebung?.id ?? null)],
       reihenfolge: [normalizedUebung?.reihenfolge ?? (this.plan?.uebungen?.length ?? 0)],
@@ -190,7 +192,7 @@ export class TrainingsplanDetailComponent implements OnInit {
     const nachfolgerId = this.uebungForm.get('nachfolger')?.value ?? null;
     const data = this.buildUebungPayload();
 
-    if (data.vorgaenger !== null && data.vorgaenger !== undefined && data.vorgaenger === nachfolgerId) {
+    if (data.vorgaenger !== null && data.vorgaenger === nachfolgerId) {
       this.snackBar.open('Vor- und Nachübung müssen unterschiedlich sein.', 'OK', { duration: 2500 });
       return;
     }
@@ -237,7 +239,7 @@ export class TrainingsplanDetailComponent implements OnInit {
       name: raw.name,
       hinweis: raw.hinweis ?? '',
       gewicht: Number(raw.gewicht ?? 0),
-      gewicht_steigerung: Number(raw.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? 2.5),
+      gewicht_steigerung: Number(raw.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT),
       vorgaenger: raw.vorgaenger ?? null,
       reihenfolge: Number(raw.reihenfolge ?? 0),
       saetze,
@@ -252,7 +254,7 @@ export class TrainingsplanDetailComponent implements OnInit {
       requests.push(this.service.updateUebung(currentNachfolgerId, { vorgaenger: null }));
     }
 
-    if (desiredNachfolgerId !== null && desiredNachfolgerId !== undefined && currentNachfolgerId !== desiredNachfolgerId) {
+    if (desiredNachfolgerId !== null && currentNachfolgerId !== desiredNachfolgerId) {
       requests.push(this.service.updateUebung(desiredNachfolgerId, { vorgaenger: currentId }));
     }
 
@@ -260,7 +262,7 @@ export class TrainingsplanDetailComponent implements OnInit {
   }
 
   private findNachfolgerId(uebungId: number | null): number | null {
-    if (uebungId === null || uebungId === undefined) {
+    if (uebungId === null) {
       return null;
     }
 
@@ -283,7 +285,7 @@ export class TrainingsplanDetailComponent implements OnInit {
     return {
       ...uebung,
       saetze: Array.isArray(uebung.saetze) ? uebung.saetze : [],
-      gewicht_steigerung: uebung.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? 2.5,
+      gewicht_steigerung: uebung.gewicht_steigerung ?? this.plan?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT,
       nachfolger_id: uebung.nachfolger_id ?? null,
       nachfolger_name: uebung.nachfolger_name ?? null,
       vorgaenger: uebung.vorgaenger ?? null,

@@ -5,10 +5,14 @@ from django.db import migrations, models
 def copy_plan_increment_to_exercises(apps, schema_editor):
     Uebung = apps.get_model("training", "Uebung")
 
+    updates = []
     for uebung in Uebung.objects.select_related("trainingsplan").all():
         if uebung.gewicht_steigerung is None and uebung.trainingsplan_id:
             uebung.gewicht_steigerung = uebung.trainingsplan.gewicht_steigerung
-            uebung.save(update_fields=["gewicht_steigerung"])
+            updates.append(uebung)
+
+    if updates:
+        Uebung.objects.bulk_update(updates, ["gewicht_steigerung"])
 
 
 class Migration(migrations.Migration):
