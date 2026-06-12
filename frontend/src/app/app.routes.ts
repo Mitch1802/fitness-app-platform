@@ -28,10 +28,6 @@ export const routes: Routes = [
         loadComponent: () => import('./trainingsplan/list/trainingsplan-list.component').then(m => m.TrainingsplanListComponent),
       },
       {
-        path: 'plaene/neu',
-        loadComponent: () => import('./trainingsplan/detail/trainingsplan-detail.component').then(m => m.TrainingsplanDetailComponent),
-      },
-      {
         path: 'plaene/:id',
         loadComponent: () => import('./trainingsplan/detail/trainingsplan-detail.component').then(m => m.TrainingsplanDetailComponent),
       },
