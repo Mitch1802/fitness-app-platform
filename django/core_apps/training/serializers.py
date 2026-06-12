@@ -14,7 +14,7 @@ class UebungSerializer(serializers.ModelSerializer):
             "gewicht", "gewicht_steigerung", "vorgaenger", "vorgaenger_name",
             "nachfolger_id", "nachfolger_name", "reihenfolge",
         ]
-        read_only_fields = ["id", "vorgaenger_name", "nachfolger_id", "nachfolger_name"]
+        read_only_fields = ["id", "trainingsplan", "vorgaenger_name", "nachfolger_id", "nachfolger_name"]
 
     def get_vorgaenger_name(self, obj):
         if obj.vorgaenger:
