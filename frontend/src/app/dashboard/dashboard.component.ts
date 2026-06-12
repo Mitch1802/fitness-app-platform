@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { TrainingSessionService } from '../_service/training-session.service';
 import { TrainingsplanService } from '../_service/trainingsplan.service';
-import { TrainingSession } from '../_interface/training-session';
+import { TrainingSession, TrainingSessionList } from '../_interface/training-session';
 import { TrainingsplanList } from '../_interface/trainingsplan';
 
 @Component({
@@ -25,7 +25,7 @@ export class DashboardComponent implements OnInit {
   private router = inject(Router);
 
   activeSession: TrainingSession | null = null;
-  recentSessions: import('../_interface/training-session').TrainingSessionList[] = [];
+  recentSessions: TrainingSessionList[] = [];
   plans: TrainingsplanList[] = [];
   loading = true;
 
@@ -35,12 +35,16 @@ export class DashboardComponent implements OnInit {
     });
     this.sessionService.getAll().subscribe({
       next: (sessions) => {
-        this.recentSessions = sessions.filter(s => s.abgeschlossen).slice(0, 5);
+        const sessionList = Array.isArray(sessions) ? sessions : [];
+        this.recentSessions = sessionList.filter(s => s.abgeschlossen).slice(0, 5);
         this.loading = false;
       },
     });
     this.planService.getAll().subscribe({
-      next: (plans) => (this.plans = plans.filter(p => p.ist_aktiv)),
+      next: (plans) => {
+        const planList = Array.isArray(plans) ? plans : [];
+        this.plans = planList.filter(p => p.ist_aktiv);
+      },
     });
   }
 

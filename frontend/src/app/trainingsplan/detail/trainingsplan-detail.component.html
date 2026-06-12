@@ -17,23 +17,27 @@
     <div class="loading">Lade...</div>
   }
 
-  <!-- Plan Form -->
   @if (editingPlan || isNew) {
     <mat-card class="form-card">
       <mat-card-content>
-        <form [formGroup]="planForm" (ngSubmit)="savePlan()">
-          <mat-form-field class="full-width">
+        <form [formGroup]="planForm" (ngSubmit)="savePlan()" class="form-stack">
+          <mat-form-field class="full-width spaced-field">
             <mat-label>Name</mat-label>
             <input matInput formControlName="name" placeholder="z.B. Oberkörper A" />
           </mat-form-field>
-          <mat-form-field class="full-width">
+          <mat-form-field class="full-width spaced-field">
+            <mat-label>Aufwärmen</mat-label>
+            <textarea matInput formControlName="aufwaermen" rows="2" placeholder="z.B. 5 Minuten Rudern + Schulter-Mobilität"></textarea>
+            <mat-hint>Wird als erster eigener Punkt angezeigt</mat-hint>
+          </mat-form-field>
+          <mat-form-field class="full-width spaced-field">
             <mat-label>Beschreibung (optional)</mat-label>
             <textarea matInput formControlName="beschreibung" rows="2"></textarea>
           </mat-form-field>
-          <mat-form-field class="half-width">
-            <mat-label>Gewichtssteigerung (kg)</mat-label>
+          <mat-form-field class="half-width spaced-field">
+            <mat-label>Standard-Steigerung (kg)</mat-label>
             <input matInput type="number" formControlName="gewicht_steigerung" step="0.5" min="0.5" />
-            <mat-hint>Bei ✓ Gewicht erhöhen</mat-hint>
+            <mat-hint>Standardwert für neue Übungen</mat-hint>
           </mat-form-field>
           <div class="form-actions">
             @if (!isNew) {
@@ -48,76 +52,102 @@
     </mat-card>
   }
 
-  <!-- Plan Info -->
   @if (plan && !editingPlan && !isNew) {
     <mat-card class="info-card">
       <mat-card-content>
+        @if (plan.aufwaermen) {
+          <div class="warmup-block">
+            <h2 class="subsection-title">1. Aufwärmen</h2>
+            <p class="plan-desc">{{ plan.aufwaermen }}</p>
+          </div>
+          <mat-divider></mat-divider>
+        }
         @if (plan.beschreibung) {
-          <p class="plan-desc">{{ plan.beschreibung }}</p>
+          <p class="plan-desc top-space">{{ plan.beschreibung }}</p>
         }
         <div class="plan-meta">
-          <span><mat-icon inline>trending_up</mat-icon> Steigerung: +{{ plan.gewicht_steigerung }} kg</span>
+          <span><mat-icon inline>trending_up</mat-icon> Standard: +{{ plan.gewicht_steigerung }} kg</span>
           <span><mat-icon inline>fitness_center</mat-icon> {{ plan.uebungen.length }} Übungen</span>
         </div>
       </mat-card-content>
     </mat-card>
 
-    <!-- Exercises Section -->
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title">Übungen</h2>
-        @if (!addingUebung && editingUebungId == null) {
+        <h2 class="section-title">{{ plan.aufwaermen ? '2. Übungen' : '1. Übungen' }}</h2>
+        @if (!addingUebung && editingUebungId === null) {
           <button mat-mini-fab color="primary" (click)="startAddUebung()" aria-label="Übung hinzufügen">
             <mat-icon>add</mat-icon>
           </button>
         }
       </div>
 
-      <!-- Add/Edit Exercise Form -->
-      @if (addingUebung || editingUebungId != null) {
+      @if (addingUebung || editingUebungId !== null) {
         <mat-card class="form-card">
           <mat-card-header>
-            <mat-card-title>{{ editingUebungId != null ? 'Übung bearbeiten' : 'Neue Übung' }}</mat-card-title>
+            <mat-card-title>{{ editingUebungId !== null ? 'Übung bearbeiten' : 'Neue Übung' }}</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <form [formGroup]="uebungForm" (ngSubmit)="saveUebung()">
-              <mat-form-field class="full-width">
+            <form [formGroup]="uebungForm" (ngSubmit)="saveUebung()" class="form-stack">
+              <mat-form-field class="full-width spaced-field">
                 <mat-label>Name / Gerät</mat-label>
                 <input matInput formControlName="name" placeholder="z.B. Bankdrücken" />
               </mat-form-field>
-              <mat-form-field class="half-width">
-                <mat-label>Startgewicht (kg)</mat-label>
-                <input matInput type="number" formControlName="gewicht" step="0.5" min="0" />
-              </mat-form-field>
-              <mat-form-field class="half-width">
-                <mat-label>Reihenfolge</mat-label>
-                <input matInput type="number" formControlName="reihenfolge" min="0" />
-              </mat-form-field>
+              <div class="row-fields spaced-field">
+                <mat-form-field class="half-width">
+                  <mat-label>Startgewicht (kg)</mat-label>
+                  <input matInput type="number" formControlName="gewicht" step="0.5" min="0" />
+                </mat-form-field>
+                <mat-form-field class="half-width">
+                  <mat-label>Steigerung (kg)</mat-label>
+                  <input matInput type="number" formControlName="gewicht_steigerung" step="0.5" min="0.5" />
+                </mat-form-field>
+              </div>
+              <div class="row-fields spaced-field">
+                <mat-form-field class="half-width">
+                  <mat-label>Reihenfolge</mat-label>
+                  <input matInput type="number" formControlName="reihenfolge" min="0" />
+                </mat-form-field>
+              </div>
               @if (otherUebungen.length > 0) {
-                <mat-form-field class="full-width">
-                  <mat-label>Nach Übung (Vorgänger)</mat-label>
+                <mat-form-field class="full-width spaced-field">
+                  <mat-label>Direkt vor dieser Übung</mat-label>
                   <mat-select formControlName="vorgaenger">
-                    <mat-option [value]="null">– Kein Vorgänger –</mat-option>
-                    @for (u of otherUebungen; track u.id) {
+                    <mat-option [value]="null">– Keine Vorübung –</mat-option>
+                    @for (u of predecessorOptions; track u.id) {
                       <mat-option [value]="u.id">{{ u.name }}</mat-option>
                     }
                   </mat-select>
-                  <mat-hint>Diese Übung direkt nach der gewählten ausführen</mat-hint>
+                </mat-form-field>
+                <mat-form-field class="full-width spaced-field">
+                  <mat-label>Direkt nach dieser Übung</mat-label>
+                  <mat-select formControlName="nachfolger">
+                    <mat-option [value]="null">– Keine Nachfolgeübung –</mat-option>
+                    @for (u of successorOptions; track u.id) {
+                      <mat-option [value]="u.id">{{ u.name }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>So kannst du zusammengehörige Übungen von beiden Seiten verknüpfen.</mat-hint>
                 </mat-form-field>
               }
-              <mat-form-field class="full-width">
+              <mat-form-field class="full-width spaced-field">
                 <mat-label>Hinweis zur Ausführung</mat-label>
                 <textarea matInput formControlName="hinweis" rows="2" placeholder="z.B. Ellbogen nah am Körper halten"></textarea>
               </mat-form-field>
 
-              <!-- Sätze -->
-              <div class="saetze-section">
+              <div class="saetze-section spaced-field">
                 <div class="saetze-header">
-                  <span class="saetze-title">Sätze</span>
+                  <div>
+                    <span class="saetze-title">Sätze</span>
+                    <div class="saetze-subtitle">Optional – leer lassen, wenn du frei trainieren willst.</div>
+                  </div>
                   <button mat-icon-button type="button" (click)="addSatz()" color="primary">
                     <mat-icon>add_circle</mat-icon>
                   </button>
                 </div>
+                @if (saetzeControls.length === 0) {
+                  <div class="empty-inline">Keine Sätze hinterlegt.</div>
+                }
                 @for (ctrl of saetzeControls; track $index; let i = $index) {
                   <div class="satz-row" [formGroup]="$any(ctrl)">
                     <span class="satz-nr">Satz {{ i + 1 }}</span>
@@ -125,11 +155,9 @@
                       <mat-label>Wdh.</mat-label>
                       <input matInput type="number" formControlName="wdh" min="1" />
                     </mat-form-field>
-                    @if (saetzeControls.length > 1) {
-                      <button mat-icon-button type="button" (click)="removeSatz(i)" color="warn">
-                        <mat-icon>remove_circle_outline</mat-icon>
-                      </button>
-                    }
+                    <button mat-icon-button type="button" (click)="removeSatz(i)" color="warn">
+                      <mat-icon>remove_circle_outline</mat-icon>
+                    </button>
                   </div>
                 }
               </div>
@@ -145,7 +173,6 @@
         </mat-card>
       }
 
-      <!-- Exercise List -->
       @if (plan.uebungen.length === 0) {
         <div class="empty-state">
           <p>Noch keine Übungen. Füge deine erste Übung hinzu!</p>
@@ -161,11 +188,18 @@
                   @if (uebung.vorgaenger_name) {
                     <p class="uebung-meta">→ nach: {{ uebung.vorgaenger_name }}</p>
                   }
+                  @if (uebung.nachfolger_name) {
+                    <p class="uebung-meta">→ vor: {{ uebung.nachfolger_name }}</p>
+                  }
                   <div class="saetze-chips">
                     @for (s of uebung.saetze; track s.nr) {
                       <span class="satz-chip">{{ s.wdh }} Wdh</span>
                     }
+                    @if (uebung.saetze.length === 0) {
+                      <span class="satz-chip neutral-chip">Ohne Sätze</span>
+                    }
                     <span class="gewicht-chip">{{ uebung.gewicht }} kg</span>
+                    <span class="steigerung-chip">+{{ uebung.gewicht_steigerung ?? plan.gewicht_steigerung }} kg</span>
                   </div>
                   @if (uebung.hinweis) {
                     <p class="uebung-hinweis">{{ uebung.hinweis }}</p>

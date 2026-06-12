@@ -23,11 +23,23 @@
   margin-bottom: 16px
   border-radius: 12px !important
 
+.form-stack
+  display: block
+
+.spaced-field
+  display: block
+  margin-bottom: 16px
+
 .full-width
   width: 100%
 
 .half-width
   width: calc(50% - 8px)
+
+.row-fields
+  display: flex
+  gap: 16px
+  flex-wrap: wrap
 
 .form-actions
   display: flex
@@ -44,42 +56,65 @@
   justify-content: space-between
   margin-bottom: 12px
 
-.section-title
+.section-title, .subsection-title
   font-size: 16px
   font-weight: 600
   margin: 0
 
+.subsection-title
+  margin-bottom: 8px
+
+.top-space
+  margin-top: 12px !important
+
 .plan-desc
   color: #555
   margin: 0 0 8px
+  white-space: pre-line
 
 .plan-meta
   display: flex
   gap: 16px
   font-size: 13px
   color: #666
+  margin-top: 12px
 
   mat-icon
     font-size: 14px
     vertical-align: middle
+
+.warmup-block
+  margin-bottom: 12px
 
 .saetze-section
   margin: 12px 0
 
 .saetze-header
   display: flex
-  align-items: center
+  align-items: flex-start
+  justify-content: space-between
+  gap: 8px
   margin-bottom: 8px
 
 .saetze-title
   font-weight: 500
-  flex: 1
+  display: block
+
+.saetze-subtitle
+  font-size: 12px
+  color: #777
+  margin-top: 2px
+
+.empty-inline
+  font-size: 13px
+  color: #888
+  padding: 8px 0
 
 .satz-row
   display: flex
   align-items: center
   gap: 8px
-  margin-bottom: 4px
+  margin-bottom: 8px
 
 .satz-nr
   font-size: 13px
@@ -124,7 +159,7 @@
   gap: 4px
   margin-bottom: 4px
 
-.satz-chip, .gewicht-chip
+.satz-chip, .gewicht-chip, .steigerung-chip
   background: #e8f5e9
   color: #1b5e20
   border-radius: 12px
@@ -135,6 +170,14 @@
 .gewicht-chip
   background: #e3f2fd
   color: #1565c0
+
+.steigerung-chip
+  background: #fff3e0
+  color: #ef6c00
+
+.neutral-chip
+  background: #f3f4f6
+  color: #5f6368
 
 .uebung-hinweis
   font-size: 12px

@@ -11,7 +11,8 @@ class Trainingsplan(models.Model):
     )
     name = models.CharField(max_length=200)
     beschreibung = models.TextField(blank=True)
-    # How much weight to increase per exercise when the user ticks "increase weight"
+    aufwaermen = models.TextField(blank=True)
+    # Default weight increase for new exercises within this plan.
     gewicht_steigerung = models.DecimalField(max_digits=5, decimal_places=2, default=2.5)
     ist_aktiv = models.BooleanField(default=True)
     erstellt_am = models.DateTimeField(auto_now_add=True)
@@ -33,10 +34,12 @@ class Uebung(models.Model):
     )
     name = models.CharField(max_length=200)
     # JSON list of sets: [{"nr": 1, "wdh": 10}, {"nr": 2, "wdh": 8}]
-    saetze = models.JSONField(default=list)
+    saetze = models.JSONField(default=list, blank=True)
     hinweis = models.TextField(blank=True)
     # The current planned weight for this exercise (kg)
     gewicht = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    # Optional weight increase for this exercise. Falls back to the plan default.
+    gewicht_steigerung = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     # Optional: predecessor exercise (must be completed before this one)
     vorgaenger = models.ForeignKey(
         "self",

@@ -1,7 +1,7 @@
-from django.utils import timezone
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from django.utils import timezone
 from .models import Trainingsplan, Uebung, TrainingSession, SatzErgebnis, ExtraUebung
 from .serializers import (
     TrainingsplanSerializer,
@@ -95,7 +95,7 @@ class TrainingSessionDetailView(generics.RetrieveUpdateAPIView):
             # Increase exercise weights where flagged
             for ergebnis in instance.satz_ergebnisse.filter(gewicht_erhoehen=True, uebung__isnull=False):
                 uebung = ergebnis.uebung
-                steigerung = uebung.trainingsplan.gewicht_steigerung
+                steigerung = uebung.gewicht_steigerung or uebung.trainingsplan.gewicht_steigerung
                 Uebung.objects.filter(pk=uebung.pk).update(
                     gewicht=uebung.gewicht + steigerung
                 )
