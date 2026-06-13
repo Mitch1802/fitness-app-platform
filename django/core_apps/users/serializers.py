@@ -12,11 +12,21 @@ class UserDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ("id",)
 
 
-class RegisterSerializer(serializers.Serializer):
+class RegisterInputSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=50, min_length=3)
-    # Using SerializerMethodField approach - actual field below:
-    class Meta:
-        pass
+    credentials = serializers.CharField(min_length=8, write_only=True)
+
+    def validate_username(self, value):
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError("Benutzername bereits vergeben.")
+        return value
+
+    def validate_credentials(self, value):
+        validate_password(value)
+        return value
+
+
+RegisterSerializer = RegisterInputSerializer
 
 
 class UpdateProfileSerializer(serializers.Serializer):
@@ -46,14 +56,3 @@ class UpdateProfileSerializer(serializers.Serializer):
             user.set_password(password)
         user.save()
         return user
-    username = serializers.CharField(max_length=50, min_length=3)
-    credentials = serializers.CharField(min_length=8, write_only=True)
-
-    def validate_username(self, value):
-        if User.objects.filter(username__iexact=value).exists():
-            raise serializers.ValidationError("Benutzername bereits vergeben.")
-        return value
-
-    def validate_credentials(self, value):
-        validate_password(value)
-        return value
