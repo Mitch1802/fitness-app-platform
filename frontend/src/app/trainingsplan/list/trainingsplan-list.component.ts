@@ -1,11 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatFabButton } from '@angular/material/button';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { TrainingsplanService } from '../../_service/trainingsplan.service';
 import { TrainingsplanList } from '../../_interface/trainingsplan';
@@ -15,7 +14,7 @@ import { TrainingsplanList } from '../../_interface/trainingsplan';
   templateUrl: './trainingsplan-list.component.html',
   styleUrls: ['./trainingsplan-list.component.sass'],
   imports: [
-    CommonModule, RouterLink,
+    CommonModule,
     MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule,
   ],
 })

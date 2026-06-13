@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from dj_rest_auth.views import LoginView, LogoutView
 
-from .serializers import UserDetailSerializer, RegisterInputSerializer
+from .serializers import UserDetailSerializer, RegisterInputSerializer, UpdateProfileSerializer
 
 User = get_user_model()
 
@@ -73,3 +73,14 @@ class UserSelfView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class UserUpdateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request):
+        serializer = UpdateProfileSerializer(data=request.data, context={"request": request})
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = serializer.save()
+        return Response(UserDetailSerializer(user).data)

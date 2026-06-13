@@ -9,6 +9,6 @@ export class StatistikService {
 
   get(uebungId?: number): Observable<StatistikEintrag[]> {
     const params = uebungId ? { uebung_id: uebungId } : undefined;
-    return this.api.get<StatistikEintrag[]>('training/statistik/', params);
+    return this.api.get<StatistikEintrag[]>('training/statistik', params);
   }
 }

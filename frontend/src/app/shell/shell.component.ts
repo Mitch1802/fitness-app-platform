@@ -7,7 +7,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
 import { AuthSessionService } from '../_service/auth-session.service';
-import { TrainingSessionService } from '../_service/training-session.service';
 import { ApiHttpService } from '../_service/api-http.service';
 import { User } from '../_interface/user';
 
@@ -22,19 +21,14 @@ import { User } from '../_interface/user';
 })
 export class ShellComponent implements OnInit {
   private authService = inject(AuthSessionService);
-  private sessionService = inject(TrainingSessionService);
   private apiService = inject(ApiHttpService);
   private router = inject(Router);
 
   currentUser: User | null = null;
-  hasActiveSession = false;
 
   ngOnInit(): void {
     this.apiService.get<User>('users/self').subscribe({
       next: (user) => (this.currentUser = user),
-    });
-    this.sessionService.getAktiv().subscribe({
-      next: (session) => (this.hasActiveSession = !!session),
     });
   }
 

@@ -1,0 +1,70 @@
+<div class="page">
+  <h1 class="page-title">Mein Profil</h1>
+
+  <!-- Benutzername ändern -->
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>person</mat-icon>
+      <mat-card-title>Benutzername</mat-card-title>
+      @if (currentUser) {
+        <mat-card-subtitle>Aktuell: {{ currentUser.username }}</mat-card-subtitle>
+      }
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="usernameForm" (ngSubmit)="saveUsername()" class="form-stack">
+        <mat-form-field class="full-width">
+          <mat-label>Neuer Benutzername</mat-label>
+          <input matInput formControlName="username" autocomplete="username" />
+          @if (usernameForm.get('username')?.hasError('minlength')) {
+            <mat-error>Mindestens 3 Zeichen</mat-error>
+          }
+        </mat-form-field>
+        <div class="form-actions">
+          <button mat-flat-button color="primary" type="submit"
+            [disabled]="usernameForm.invalid || savingUsername">
+            Speichern
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Passwort ändern -->
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>lock</mat-icon>
+      <mat-card-title>Passwort ändern</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="passwordForm" (ngSubmit)="savePassword()" class="form-stack">
+        <mat-form-field class="full-width">
+          <mat-label>Neues Passwort</mat-label>
+          <input matInput [type]="showNewPw ? 'text' : 'password'"
+            formControlName="password" autocomplete="new-password" />
+          <button mat-icon-button matSuffix type="button"
+            (click)="showNewPw = !showNewPw" [attr.aria-label]="'Passwort anzeigen'">
+            <mat-icon>{{ showNewPw ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (passwordForm.get('password')?.hasError('minlength')) {
+            <mat-error>Mindestens 8 Zeichen</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field class="full-width">
+          <mat-label>Passwort bestätigen</mat-label>
+          <input matInput [type]="showNewPw ? 'text' : 'password'"
+            formControlName="password_confirm" autocomplete="new-password" />
+          @if (pwMismatch) {
+            <mat-error>Passwörter stimmen nicht überein</mat-error>
+          }
+        </mat-form-field>
+        <p class="hint">Nach dem Ändern wirst du automatisch abgemeldet.</p>
+        <div class="form-actions">
+          <button mat-flat-button color="primary" type="submit"
+            [disabled]="passwordForm.invalid || savingPassword">
+            Passwort ändern
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

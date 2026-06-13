@@ -89,8 +89,9 @@
               </mat-form-field>
               <div class="row-fields spaced-field">
                 <mat-form-field class="half-width">
-                  <mat-label>Steigerung (kg)</mat-label>
-                  <input matInput type="number" formControlName="gewicht_steigerung" step="0.5" min="0.5" />
+                  <mat-label>Steigerung (kg, optional)</mat-label>
+                  <input matInput type="number" formControlName="gewicht_steigerung" step="0.5" min="0" />
+                  <mat-hint>Leer = Planstandard wird verwendet</mat-hint>
                 </mat-form-field>
               </div>
               <div class="row-fields spaced-field">
@@ -167,50 +168,52 @@
         </mat-card>
       }
 
-      @if (plan.uebungen.length === 0) {
-        <div class="empty-state">
-          <p>Noch keine Übungen. Füge deine erste Übung hinzu!</p>
+      @if (!addingUebung && editingUebungId === null) {
+        @if (plan.uebungen.length === 0) {
+          <div class="empty-state">
+            <p>Noch keine Übungen. Füge deine erste Übung hinzu!</p>
+          </div>
+        }
+        <div class="uebungen-list">
+          @for (uebung of plan.uebungen; track uebung.id) {
+            <mat-card class="uebung-card">
+              <mat-card-content>
+                <div class="uebung-row">
+                  <div class="uebung-info">
+                    <h3 class="uebung-name">{{ uebung.name }}</h3>
+                    @if (uebung.vorgaenger_name) {
+                      <p class="uebung-meta">→ nach: {{ uebung.vorgaenger_name }}</p>
+                    }
+                    @if (uebung.nachfolger_name) {
+                      <p class="uebung-meta">→ vor: {{ uebung.nachfolger_name }}</p>
+                    }
+                    <div class="saetze-chips">
+                      @for (s of uebung.saetze; track s.nr) {
+                        <span class="satz-chip">{{ s.wdh }} Wdh{{ s.gewicht ? ' · ' + s.gewicht + ' kg' : '' }}</span>
+                      }
+                      @if (uebung.saetze.length === 0) {
+                        <span class="satz-chip neutral-chip">Ohne Sätze</span>
+                      }
+                      <span class="steigerung-chip">+{{ uebung.gewicht_steigerung }} kg</span>
+                    </div>
+                    @if (uebung.hinweis) {
+                      <p class="uebung-hinweis">{{ uebung.hinweis }}</p>
+                    }
+                  </div>
+                  <div class="uebung-actions">
+                    <button mat-icon-button (click)="editUebung(uebung)" aria-label="Bearbeiten">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteUebung(uebung.id)" aria-label="Löschen">
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          }
         </div>
       }
-      <div class="uebungen-list">
-        @for (uebung of plan.uebungen; track uebung.id) {
-          <mat-card class="uebung-card">
-            <mat-card-content>
-              <div class="uebung-row">
-                <div class="uebung-info">
-                  <h3 class="uebung-name">{{ uebung.name }}</h3>
-                  @if (uebung.vorgaenger_name) {
-                    <p class="uebung-meta">→ nach: {{ uebung.vorgaenger_name }}</p>
-                  }
-                  @if (uebung.nachfolger_name) {
-                    <p class="uebung-meta">→ vor: {{ uebung.nachfolger_name }}</p>
-                  }
-                  <div class="saetze-chips">
-                    @for (s of uebung.saetze; track s.nr) {
-                      <span class="satz-chip">{{ s.wdh }} Wdh{{ s.gewicht ? ' · ' + s.gewicht + ' kg' : '' }}</span>
-                    }
-                    @if (uebung.saetze.length === 0) {
-                      <span class="satz-chip neutral-chip">Ohne Sätze</span>
-                    }
-                    <span class="steigerung-chip">+{{ uebung.gewicht_steigerung }} kg</span>
-                  </div>
-                  @if (uebung.hinweis) {
-                    <p class="uebung-hinweis">{{ uebung.hinweis }}</p>
-                  }
-                </div>
-                <div class="uebung-actions">
-                  <button mat-icon-button (click)="editUebung(uebung)" aria-label="Bearbeiten">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button mat-icon-button color="warn" (click)="deleteUebung(uebung.id)" aria-label="Löschen">
-                    <mat-icon>delete_outline</mat-icon>
-                  </button>
-                </div>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        }
-      </div>
     </section>
   }
 </div>

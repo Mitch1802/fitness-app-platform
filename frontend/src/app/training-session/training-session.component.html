@@ -5,285 +5,246 @@
   }
 
   @if (!loading && session) {
+
+    <!-- Header -->
     <div class="session-header">
       <div class="session-info">
         <h1 class="session-title">{{ session.trainingsplan_name ?? 'Freies Training' }}</h1>
         <p class="session-date">{{ formatDate(session.datum) }}</p>
       </div>
       @if (!session.abgeschlossen) {
-        <button mat-flat-button color="accent" class="finish-btn" (click)="trainingAbschliessen()" [disabled]="abschliessen_saving">
-          <mat-icon>done_all</mat-icon> Abschliessen
-        </button>
+        <div class="session-header-actions">
+          <button mat-stroked-button color="warn"
+            (click)="trainingAbbrechen()" [disabled]="abbrechen_saving">
+            <mat-icon>close</mat-icon> Abbrechen
+          </button>
+          <button mat-flat-button color="accent"
+            (click)="trainingAbschliessen()" [disabled]="abschliessen_saving">
+            <mat-icon>done_all</mat-icon> Abschließen
+          </button>
+        </div>
       } @else {
         <div class="completed-actions">
           <div class="badge-done"><mat-icon>check_circle</mat-icon> Abgeschlossen</div>
-          <button mat-stroked-button color="warn" class="delete-completed-btn" (click)="deleteCompletedTraining()" [disabled]="deletingCompletedSession">
-            <mat-icon>delete_outline</mat-icon> Training loeschen
+          <button mat-stroked-button color="warn"
+            (click)="deleteCompletedTraining()" [disabled]="deletingCompletedSession">
+            <mat-icon>delete_outline</mat-icon> Löschen
           </button>
         </div>
       }
     </div>
 
+    <!-- Aufwärmen -->
     <mat-card class="warmup-card">
       <mat-card-content>
         <div class="warmup-title-row">
           <mat-icon>local_fire_department</mat-icon>
           <div class="warmup-title-content">
-            <div class="warmup-title">Aufwaermen tracken</div>
-            <div class="warmup-text">{{ warmupDisplayText }}</div>
+            <div class="warmup-label">Aufwärmen</div>
+            @if (plan?.aufwaermen) {
+              <div class="warmup-text">{{ plan!.aufwaermen }}</div>
+            }
           </div>
+          @if (session.warmup_abgeschlossen) {
+            <mat-icon class="warmup-done-icon">check_circle</mat-icon>
+          }
         </div>
 
         @if (!session.abgeschlossen) {
-          <form [formGroup]="warmupForm" class="warmup-form" (ngSubmit)="saveWarmup()">
-            <mat-checkbox formControlName="warmup_abgeschlossen" color="primary">
-              Aufwaermen erledigt
-            </mat-checkbox>
+          <form [formGroup]="warmupForm" class="warmup-form">
             <div class="input-row">
               <mat-form-field class="flex-field">
                 <mat-label>Dauer (Minuten)</mat-label>
                 <input matInput type="number" min="0" formControlName="warmup_dauer_minuten" />
+                <mat-hint>Eintragen = als erledigt markiert</mat-hint>
+              </mat-form-field>
+              <mat-form-field class="flex-field">
+                <mat-label>Notiz</mat-label>
+                <input matInput formControlName="warmup_notiz" />
               </mat-form-field>
             </div>
-            <mat-form-field class="full-width">
-              <mat-label>Notiz</mat-label>
-              <input matInput formControlName="warmup_notiz" />
-            </mat-form-field>
-            <div class="form-actions warmup-actions">
-              <button mat-stroked-button type="button" (click)="saveWarmup()" [disabled]="warmupSaving || warmupForm.invalid">
-                Speichern
-              </button>
-              <button mat-flat-button color="primary" type="button" (click)="saveWarmup(true)" [disabled]="warmupSaving || warmupForm.invalid">
-                <mat-icon>arrow_forward</mat-icon> Weiter zur naechsten Uebung
+            <div class="warmup-actions">
+              <button mat-stroked-button type="button"
+                (click)="saveWarmup()" [disabled]="warmupSaving">Speichern</button>
+              <button mat-flat-button color="primary" type="button"
+                (click)="saveWarmup(true)" [disabled]="warmupSaving">
+                <mat-icon>arrow_forward</mat-icon> Zur ersten Übung
               </button>
             </div>
           </form>
         } @else {
-          <div class="warmup-summary">
-            <span>Status: {{ session.warmup_abgeschlossen ? 'erledigt' : 'nicht erledigt' }}</span>
-            @if (session.warmup_dauer_minuten !== null) {
-              <span>Dauer: {{ session.warmup_dauer_minuten }} Min</span>
-            }
-            @if (session.warmup_notiz) {
-              <span>Notiz: {{ session.warmup_notiz }}</span>
-            }
-          </div>
+          @if (session.warmup_dauer_minuten !== null || session.warmup_notiz) {
+            <div class="warmup-summary">
+              @if (session.warmup_dauer_minuten !== null) {
+                <span>{{ session.warmup_dauer_minuten }} Min</span>
+              }
+              @if (session.warmup_notiz) {
+                <span>{{ session.warmup_notiz }}</span>
+              }
+            </div>
+          }
         }
       </mat-card-content>
     </mat-card>
 
-    <mat-tab-group [(selectedIndex)]="activeTab" class="tabs">
-      <mat-tab label="Uebungen">
-        <div class="tab-content">
-          @if (sortedUebungen.length > 0) {
-            <p class="tab-hint">Tippe auf eine Uebung, um einen Satz zu erfassen. Gesperrte Uebungen werden erst nach dem Vorgaenger freigeschaltet.</p>
-            <div class="uebungen-grid">
-              @for (uebung of sortedUebungen; track uebung.id) {
-                <mat-card
-                  class="uebung-chip"
-                  [class.selected]="selectedUebungId === uebung.id && showSatzForm"
-                  [class.locked]="isExerciseLocked(uebung)"
-                  (click)="selectUebung(uebung)">
-                  <mat-card-content>
-                    <div class="chip-top-row">
-                      <span class="chip-order">#{{ uebung.reihenfolge || ($index + 1) }}</span>
-                      @if (isExerciseLocked(uebung)) {
-                        <span class="chip-lock">gesperrt</span>
-                      }
-                    </div>
-                    <span class="chip-name">{{ uebung.name }}</span>
-                    <span class="chip-increment">+{{ uebung.gewicht_steigerung }} kg</span>
-                    @if (isExerciseLocked(uebung)) {
-                      <span class="chip-lock-reason">{{ getExerciseLockReason(uebung) }}</span>
-                    }
-                  </mat-card-content>
-                </mat-card>
-              }
-            </div>
-          } @else {
-            <p class="tab-hint">Freies Training - nutze Satz erfassen, um direkt Uebungen einzugeben.</p>
-          }
-
-          @if (showSatzForm && !session.abgeschlossen) {
-            <mat-card class="satz-form-card">
-              <mat-card-header>
-                <mat-card-title>Satz erfassen</mat-card-title>
-                <mat-card-subtitle>{{ satzForm.get('uebung_name')?.value }}</mat-card-subtitle>
-              </mat-card-header>
-              <mat-card-content>
-                <form [formGroup]="satzForm" (ngSubmit)="saveSatz()">
-                  @if (sortedUebungen.length === 0) {
-                    <mat-form-field class="full-width">
-                      <mat-label>Uebungsname</mat-label>
-                      <input matInput formControlName="uebung_name" />
-                    </mat-form-field>
-                  }
-                  <div class="input-row">
-                    <mat-form-field class="flex-field">
-                      <mat-label>Gewicht (kg)</mat-label>
-                      <input matInput type="number" formControlName="gewicht" step="0.5" min="0" />
-                    </mat-form-field>
-                    <mat-form-field class="flex-field">
-                      <mat-label>Wiederholungen</mat-label>
-                      <input matInput type="number" formControlName="wiederholungen" min="1" />
-                    </mat-form-field>
-                    <mat-form-field class="satz-nr-field">
-                      <mat-label>Satz</mat-label>
-                      <input matInput type="number" formControlName="satz_nummer" min="1" />
-                    </mat-form-field>
-                  </div>
-                  <mat-checkbox formControlName="gewicht_erhoehen" color="primary">
-                    Gewicht beim naechsten Mal erhoehen (+{{ selectedSteigerungText }} kg)
-                  </mat-checkbox>
-                  <div class="form-actions">
-                    <button mat-button type="button" (click)="showSatzForm = false">Schliessen</button>
-                    <button mat-stroked-button type="button" (click)="selectNextExercise()" [disabled]="!canGoNextExercise">
-                      <mat-icon>arrow_forward</mat-icon> Weiter
-                    </button>
-                    <button mat-flat-button color="primary" type="submit" [disabled]="satzForm.invalid">
-                      <mat-icon>add</mat-icon> Satz speichern
-                    </button>
-                  </div>
-                </form>
-              </mat-card-content>
-            </mat-card>
-          }
-
-          @if (!session.abgeschlossen && sortedUebungen.length === 0 && !showSatzForm) {
-            <div class="actions-row">
-              <button mat-flat-button color="primary" (click)="showSatzForm = true; showExtraForm = false">
-                <mat-icon>add</mat-icon> Satz erfassen
-              </button>
-            </div>
-          }
-        </div>
-      </mat-tab>
-
-      <mat-tab [label]="'Ergebnisse (' + session.satz_ergebnisse.length + ')'">
-        <div class="tab-content">
-          @if (ergebnisseByUebung.length === 0) {
-            <div class="empty-state">Noch keine Saetze erfasst.</div>
-          }
-          @for (gruppe of ergebnisseByUebung; track gruppe.uebung_name) {
-            <mat-card class="ergebnis-gruppe">
-              <mat-card-header>
-                <mat-card-title>{{ gruppe.uebung_name }}</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                @for (satz of gruppe.saetze; track satz.id) {
-                  <div class="result-set-card">
-                    <div class="result-set-header">
-                      <span class="result-set-title">Satz {{ satz.satz_nummer }}</span>
-                      <div class="satz-actions">
-                        @if (!session.abgeschlossen) {
-                          <button mat-icon-button class="erhoehen-btn" [class.active]="satz.gewicht_erhoehen"
-                            (click)="toggleGewichtErhoehen(satz)" [title]="satz.gewicht_erhoehen ? 'Steigerung aktiv' : 'Gewicht erhoehen?'">
-                            <mat-icon>trending_up</mat-icon>
-                          </button>
-                          <button mat-icon-button color="warn" (click)="deleteSatz(satz.id)">
-                            <mat-icon>delete_outline</mat-icon>
-                          </button>
-                        } @else if (satz.gewicht_erhoehen) {
-                          <mat-icon class="erhoehen-icon">trending_up</mat-icon>
-                        }
-                      </div>
-                    </div>
-
-                    <div class="result-set-grid">
-                      <div class="result-field">
-                        <span class="result-label">Gewicht</span>
-                        <span class="result-value">{{ satz.gewicht | number:'1.1-2' }} kg</span>
-                      </div>
-                      <div class="result-field">
-                        <span class="result-label">Wiederholungen</span>
-                        <span class="result-value">{{ satz.wiederholungen }} Wdh</span>
-                      </div>
-                    </div>
-
-                    @if (satz.gewicht_erhoehen) {
-                      <div class="result-flag">Gewichtserhoehung fuer naechstes Training markiert</div>
-                    }
-                  </div>
-                }
-              </mat-card-content>
-            </mat-card>
-          }
-        </div>
-      </mat-tab>
-
-      <mat-tab [label]="'Extras (' + session.extra_uebungen.length + ')'">
-        <div class="tab-content">
-          @if (!session.abgeschlossen) {
-            @if (!showExtraForm) {
-              <div class="actions-row">
-                <button mat-flat-button color="primary" (click)="showExtraForm = true; showSatzForm = false">
-                  <mat-icon>add</mat-icon> Extra-Uebung hinzufuegen
-                </button>
-              </div>
-            } @else {
-              <mat-card class="satz-form-card">
-                <mat-card-header>
-                  <mat-card-title>Extra-Uebung</mat-card-title>
-                </mat-card-header>
-                <mat-card-content>
-                  <form [formGroup]="extraForm" (ngSubmit)="saveExtra()">
-                    <mat-form-field class="full-width">
-                      <mat-label>Name</mat-label>
-                      <input matInput formControlName="name" placeholder="z.B. Laufen, Radfahren, Dehnen" />
-                    </mat-form-field>
-                    <div class="input-row">
-                      <mat-form-field class="flex-field">
-                        <mat-label>Dauer (Min)</mat-label>
-                        <input matInput type="number" formControlName="dauer_minuten" min="0" />
-                      </mat-form-field>
-                      <mat-form-field class="flex-field">
-                        <mat-label>Distanz (km)</mat-label>
-                        <input matInput type="number" formControlName="distanz_km" step="0.1" min="0" />
-                      </mat-form-field>
-                    </div>
-                    <mat-form-field class="full-width">
-                      <mat-label>Notiz</mat-label>
-                      <input matInput formControlName="notiz" />
-                    </mat-form-field>
-                    <div class="form-actions">
-                      <button mat-button type="button" (click)="showExtraForm = false">Abbrechen</button>
-                      <button mat-flat-button color="primary" type="submit" [disabled]="extraForm.invalid">
-                        Hinzufuegen
-                      </button>
-                    </div>
-                  </form>
-                </mat-card-content>
-              </mat-card>
+    <!-- Aktive Übung -->
+    @if (!session.abgeschlossen) {
+      @if (selectedUebung) {
+        <mat-card class="uebung-active-card">
+          <mat-card-header>
+            <mat-card-title>
+              <span class="uebung-order">#{{ selectedUebung.reihenfolge || 1 }}</span>
+              {{ selectedUebung.name }}
+            </mat-card-title>
+            @if (selectedUebung.hinweis) {
+              <mat-card-subtitle>{{ selectedUebung.hinweis }}</mat-card-subtitle>
             }
-          }
+          </mat-card-header>
 
-          @if (session.extra_uebungen.length === 0) {
-            <div class="empty-state">Keine Extra-Uebungen.</div>
-          }
-          @for (extra of session.extra_uebungen; track extra.id) {
-            <mat-card class="extra-card">
-              <mat-card-content>
-                <div class="extra-row">
-                  <mat-icon>directions_run</mat-icon>
-                  <div class="extra-info">
-                    <span class="extra-name">{{ extra.name }}</span>
-                    <span class="extra-meta">
-                      @if (extra.dauer_minuten) { {{ extra.dauer_minuten }} Min }
-                      @if (extra.distanz_km) { · {{ extra.distanz_km }} km }
-                      @if (extra.notiz) { · {{ extra.notiz }} }
-                    </span>
-                  </div>
-                  @if (!session.abgeschlossen) {
-                    <button mat-icon-button color="warn" (click)="deleteExtra(extra.id)">
+          <!-- Bisherige Sätze dieser Übung -->
+          @if (currentExerciseSaetze.length > 0) {
+            <mat-card-content class="prev-saetze-content">
+              <div class="prev-saetze-title">Erfasste Sätze</div>
+              @for (satz of currentExerciseSaetze; track satz.id) {
+                <div class="prev-satz-row">
+                  <span class="prev-satz-nr">Satz {{ satz.satz_nummer }}</span>
+                  <span class="prev-satz-data">{{ satz.gewicht | number:'1.1-2' }} kg × {{ satz.wiederholungen }} Wdh</span>
+                  <div class="prev-satz-actions">
+                    <button mat-icon-button class="erhoehen-btn" [class.active]="satz.gewicht_erhoehen"
+                      (click)="toggleGewichtErhoehen(satz)"
+                      [title]="satz.gewicht_erhoehen ? 'Steigerung aktiv' : 'Gewicht erhöhen?'">
+                      <mat-icon>trending_up</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteSatz(satz.id)">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
+                  </div>
+                </div>
+              }
+            </mat-card-content>
+          }
+
+          <!-- Neuer Satz -->
+          <mat-card-content>
+            <form [formGroup]="satzForm" (ngSubmit)="saveSatz()" class="satz-form">
+              <div class="input-row">
+                <mat-form-field class="flex-field">
+                  <mat-label>Gewicht (kg)</mat-label>
+                  <input matInput type="number" formControlName="gewicht" step="0.5" min="0" />
+                </mat-form-field>
+                <mat-form-field class="flex-field">
+                  <mat-label>Wiederholungen</mat-label>
+                  <input matInput type="number" formControlName="wiederholungen" min="1" />
+                </mat-form-field>
+                <mat-form-field class="satz-nr-field">
+                  <mat-label>Satz</mat-label>
+                  <input matInput type="number" formControlName="satz_nummer" min="1" />
+                </mat-form-field>
+              </div>
+              <div class="satz-meta-row">
+                <span class="steigerung-hint">+{{ selectedSteigerungText }} kg Steigerung</span>
+                <button mat-stroked-button type="button" class="erhoehen-toggle-btn"
+                  [class.active]="satzForm.get('gewicht_erhoehen')?.value"
+                  (click)="satzForm.patchValue({gewicht_erhoehen: !satzForm.get('gewicht_erhoehen')?.value})">
+                  <mat-icon>trending_up</mat-icon>
+                  {{ satzForm.get('gewicht_erhoehen')?.value ? 'Steigerung markiert' : 'Nächstes Mal erhöhen?' }}
+                </button>
+              </div>
+              <button mat-flat-button color="primary" type="submit"
+                class="satz-save-btn" [disabled]="satzForm.invalid">
+                <mat-icon>add</mat-icon> Satz speichern
+              </button>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Navigations-Buttons -->
+        <div class="nav-buttons">
+          <button mat-flat-button color="primary"
+            (click)="selectNextExercise()" [disabled]="!canGoNextExercise">
+            <mat-icon>arrow_forward</mat-icon> Nächste Übung
+          </button>
+          <button mat-stroked-button (click)="showManualPicker = !showManualPicker">
+            <mat-icon>list</mat-icon> Übung wählen
+          </button>
+        </div>
+
+      } @else {
+        <div class="no-exercise-hint">
+          <mat-icon>fitness_center</mat-icon>
+          <p>Wähle eine Übung, um zu starten.</p>
+          <button mat-flat-button color="primary" (click)="showManualPicker = true">
+            <mat-icon>list</mat-icon> Übung auswählen
+          </button>
+        </div>
+      }
+
+      <!-- Manueller Übungs-Picker -->
+      @if (showManualPicker) {
+        <mat-card class="picker-card">
+          <mat-card-header>
+            <mat-card-title>Übung auswählen</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            @if (sortedUebungen.length === 0) {
+              <mat-form-field class="full-width">
+                <mat-label>Übungsname (freies Training)</mat-label>
+                <input matInput [value]="satzForm.get('uebung_name')?.value"
+                  (input)="satzForm.patchValue({uebung_name: $any($event.target).value, uebung_id: null})" />
+              </mat-form-field>
+              <button mat-flat-button color="primary"
+                (click)="showManualPicker = false">OK</button>
+            }
+            @for (uebung of sortedUebungen; track uebung.id) {
+              <div class="picker-row"
+                [class.picker-locked]="isExerciseLocked(uebung)"
+                (click)="pickExercise(uebung)">
+                <div class="picker-info">
+                  <span class="picker-order">#{{ uebung.reihenfolge || ($index + 1) }}</span>
+                  <span class="picker-name" [class.locked-text]="isExerciseLocked(uebung)">{{ uebung.name }}</span>
+                  @if (isExerciseLocked(uebung)) {
+                    <span class="picker-lock">↑ zuerst erledigen</span>
                   }
                 </div>
-              </mat-card-content>
-            </mat-card>
-          }
-        </div>
-      </mat-tab>
-    </mat-tab-group>
+                <span class="picker-saetze">{{ getNextSatzNr(uebung.id, uebung.name) - 1 }}/{{ uebung.saetze.length || '?' }} Sätze</span>
+                <mat-icon class="picker-chevron">chevron_right</mat-icon>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      }
+    }
+
+    <!-- Abgeschlossene Session: Ergebnisse -->
+    @if (session.abgeschlossen) {
+      @for (gruppe of ergebnisseByUebung; track gruppe.uebung_name) {
+        <mat-card class="ergebnis-gruppe">
+          <mat-card-header>
+            <mat-card-title>{{ gruppe.uebung_name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            @for (satz of gruppe.saetze; track satz.id) {
+              <div class="result-set-card">
+                <span class="result-set-title">Satz {{ satz.satz_nummer }}</span>
+                <div class="result-set-grid">
+                  <div class="result-field">
+                    <span class="result-label">Gewicht</span>
+                    <span class="result-value">{{ satz.gewicht | number:'1.1-2' }} kg</span>
+                  </div>
+                  <div class="result-field">
+                    <span class="result-label">Wiederholungen</span>
+                    <span class="result-value">{{ satz.wiederholungen }} Wdh</span>
+                  </div>
+                </div>
+                @if (satz.gewicht_erhoehen) {
+                  <div class="result-flag">↑ Gewicht nächstes Mal erhöhen</div>
+                }
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      }
+    }
+
   }
 </div>

@@ -7,10 +7,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTabsModule } from '@angular/material/tabs';
 import { TrainingSessionService } from '../_service/training-session.service';
 import { TrainingsplanService } from '../_service/trainingsplan.service';
 import { TrainingSession, SatzErgebnis } from '../_interface/training-session';
@@ -26,8 +24,8 @@ const DEFAULT_WEIGHT_INCREMENT = 2.5;
   imports: [
     CommonModule, ReactiveFormsModule, DecimalPipe,
     MatCardModule, MatButtonModule, MatIconModule,
-    MatInputModule, MatFormFieldModule, MatCheckboxModule,
-    MatChipsModule, MatTabsModule,
+    MatInputModule, MatFormFieldModule,
+    MatChipsModule,
   ],
 })
 export class TrainingSessionComponent implements OnInit {
@@ -43,6 +41,7 @@ export class TrainingSessionComponent implements OnInit {
   uebungen: Uebung[] = [];
   loading = true;
   abschliessen_saving = false;
+  abbrechen_saving = false;
   warmupSaving = false;
   deletingCompletedSession = false;
 
@@ -53,8 +52,7 @@ export class TrainingSessionComponent implements OnInit {
 
   extraForm!: FormGroup;
   showExtraForm = false;
-
-  activeTab = 0;
+  showManualPicker = false;
 
   ngOnInit(): void {
     this.initForms();
@@ -72,6 +70,13 @@ export class TrainingSessionComponent implements OnInit {
         },
       });
     }
+  }
+
+  get currentExerciseSaetze(): SatzErgebnis[] {
+    if (!this.session || !this.selectedUebung) return [];
+    return this.session.satz_ergebnisse.filter(
+      (s) => s.uebung === this.selectedUebung!.id || s.uebung_name === this.selectedUebung!.name
+    );
   }
 
   get sortedUebungen(): Uebung[] {
@@ -174,7 +179,6 @@ export class TrainingSessionComponent implements OnInit {
     });
 
     this.warmupForm = this.fb.group({
-      warmup_abgeschlossen: [false],
       warmup_dauer_minuten: [null, [Validators.min(0)]],
       warmup_notiz: [''],
     });
@@ -209,6 +213,15 @@ export class TrainingSessionComponent implements OnInit {
     return `${uebung.vorgaenger_name ?? 'Vorgaengeruebung'} zuerst erledigen`;
   }
 
+  pickExercise(uebung: Uebung): void {
+    if (this.isExerciseLocked(uebung)) {
+      this.snackBar.open(this.getExerciseLockReason(uebung), 'OK', { duration: 2500 });
+      return;
+    }
+    this.showManualPicker = false;
+    this.selectUebung(uebung);
+  }
+
   selectUebung(uebung: Uebung): void {
     if (this.isExerciseLocked(uebung)) {
       this.snackBar.open(this.getExerciseLockReason(uebung), 'OK', { duration: 2500 });
@@ -237,11 +250,12 @@ export class TrainingSessionComponent implements OnInit {
 
     this.warmupSaving = true;
     const value = this.warmupForm.value;
+    const dauer = value.warmup_dauer_minuten === '' || value.warmup_dauer_minuten === undefined || value.warmup_dauer_minuten === null
+      ? null
+      : Number(value.warmup_dauer_minuten);
     const payload: Partial<TrainingSession> = {
-      warmup_abgeschlossen: Boolean(value.warmup_abgeschlossen),
-      warmup_dauer_minuten: value.warmup_dauer_minuten === '' || value.warmup_dauer_minuten === undefined
-        ? null
-        : value.warmup_dauer_minuten,
+      warmup_abgeschlossen: dauer !== null && dauer > 0,
+      warmup_dauer_minuten: dauer,
       warmup_notiz: String(value.warmup_notiz ?? ''),
     };
 
@@ -376,6 +390,23 @@ export class TrainingSessionComponent implements OnInit {
     });
   }
 
+  trainingAbbrechen(): void {
+    if (!this.session || this.session.abgeschlossen || this.abbrechen_saving) return;
+    if (!confirm('Training abbrechen? Die Session wird gelöscht und nicht gespeichert.')) return;
+    this.abbrechen_saving = true;
+    this.service.delete(this.session.id)
+      .pipe(finalize(() => { this.abbrechen_saving = false; }))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Training abgebrochen.', '', { duration: 2000 });
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error: unknown) => {
+          this.snackBar.open(this.extractErrorMessage(error, 'Abbrechen fehlgeschlagen.'), 'OK', { duration: 3000 });
+        },
+      });
+  }
+
   trainingAbschliessen(): void {
     if (!this.session || this.abschliessen_saving) return;
     if (!confirm('Training abschliessen? Gewichtssteigerungen werden angewendet.')) return;
@@ -429,7 +460,6 @@ export class TrainingSessionComponent implements OnInit {
     }
 
     this.warmupForm.patchValue({
-      warmup_abgeschlossen: Boolean(this.session.warmup_abgeschlossen),
       warmup_dauer_minuten: this.session.warmup_dauer_minuten,
       warmup_notiz: this.session.warmup_notiz,
     });

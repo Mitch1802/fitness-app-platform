@@ -1,12 +1,13 @@
 .page
   padding: 16px
-  max-width: 920px
+  max-width: 640px
   margin: 0 auto
 
 .loading
   text-align: center
   padding: 48px
 
+// ── Header ────────────────────────────────────────────────────────────────────
 .session-header
   display: flex
   align-items: flex-start
@@ -20,24 +21,25 @@
 .session-title
   font-size: 20px
   font-weight: 700
-  margin: 0 0 4px
+  margin: 0 0 2px
 
 .session-date
   font-size: 13px
   color: #888
   margin: 0
 
-.finish-btn
-  white-space: nowrap
+.session-header-actions
+  display: flex
+  gap: 8px
   flex-shrink: 0
+  flex-wrap: wrap
+  justify-content: flex-end
 
 .completed-actions
   display: flex
   align-items: center
-  gap: 10px
-
-.delete-completed-btn
-  white-space: nowrap
+  gap: 8px
+  flex-shrink: 0
 
 .badge-done
   display: flex
@@ -45,7 +47,9 @@
   gap: 4px
   color: #1b5e20
   font-weight: 500
+  white-space: nowrap
 
+// ── Aufwärmen ────────────────────────────────────────────────────────────────
 .warmup-card
   margin-bottom: 16px
   border-radius: 12px !important
@@ -54,149 +58,231 @@
 .warmup-title-row
   display: flex
   align-items: flex-start
-  gap: 12px
+  gap: 10px
+  margin-bottom: 8px
 
   mat-icon
     color: #ef6c00
+    margin-top: 2px
 
 .warmup-title-content
   flex: 1
 
-.warmup-title
+.warmup-label
   font-size: 14px
   font-weight: 600
-  margin-bottom: 4px
 
 .warmup-text
   font-size: 13px
   color: #666
   white-space: pre-line
+  margin-top: 2px
+
+.warmup-done-icon
+  color: #1b5e20 !important
+  flex-shrink: 0
 
 .warmup-form
-  margin-top: 12px
+  margin-top: 4px
 
 .warmup-actions
-  justify-content: flex-start
+  display: flex
+  gap: 8px
+  margin-top: 10px
+  flex-wrap: wrap
 
 .warmup-summary
-  margin-top: 12px
   display: flex
-  flex-direction: column
-  gap: 4px
+  gap: 12px
   font-size: 13px
   color: #555
+  margin-top: 6px
 
-.tabs
-  margin: 0 -16px
+// ── Aktive Übung ─────────────────────────────────────────────────────────────
+.uebung-active-card
+  margin-bottom: 12px
+  border-radius: 12px !important
+  border-left: 3px solid #1b5e20
 
-.tab-content
-  padding: 16px
-
-.tab-hint
-  font-size: 13px
-  color: #888
-  margin: 0 0 12px
-
-.uebungen-grid
-  display: grid
-  grid-template-columns: 1fr
-  gap: 10px
-  margin-bottom: 16px
-
-.uebung-chip
-  cursor: pointer
-  border-radius: 10px !important
-  transition: all 0.15s
-  border: 1px solid transparent
-
-  &:hover, &.selected
-    background: #e8f5e9 !important
-    border: 1px solid #1b5e20
-
-  &.locked
-    cursor: not-allowed
-    opacity: 0.85
-    background: #fafafa
-    border: 1px solid #d9d9d9
-
-    &:hover
-      background: #fafafa !important
-      border: 1px solid #d9d9d9
-
-  mat-card-content
-    padding: 12px !important
-    display: flex
-    flex-direction: column
-    align-items: flex-start
-    gap: 4px
-
-.chip-top-row
-  width: 100%
-  display: flex
-  justify-content: space-between
-  align-items: center
-  gap: 8px
-
-.chip-order
-  font-size: 11px
+.uebung-order
+  font-size: 12px
   font-weight: 700
   color: #607d8b
   background: #eceff1
   border-radius: 999px
-  padding: 2px 8px
+  padding: 1px 8px
+  margin-right: 6px
 
-.chip-lock
-  font-size: 11px
-  color: #b71c1c
-  font-weight: 600
+.prev-saetze-content
+  padding-bottom: 4px !important
 
-.chip-name
-  font-size: 14px
-  font-weight: 600
-  text-align: left
-
-.chip-increment
+.prev-saetze-title
   font-size: 12px
-  color: #ef6c00
-  font-weight: 500
+  font-weight: 600
+  color: #888
+  margin-bottom: 6px
 
-.chip-lock-reason
-  font-size: 11px
-  color: #b71c1c
-
-.satz-form-card
-  margin-top: 16px
-  border-radius: 12px !important
-  border-left: 3px solid #1b5e20
-
-.ergebnis-gruppe
-  margin-bottom: 12px
-  border-radius: 10px !important
-
-  mat-card-content
-    padding: 10px 16px !important
-
-.result-set-card
-  border: 1px solid #e4e7eb
-  border-radius: 10px
-  padding: 10px
-  margin-bottom: 8px
-  background: #fff
+.prev-satz-row
+  display: flex
+  align-items: center
+  gap: 8px
+  padding: 4px 0
+  border-bottom: 1px solid #f5f5f5
 
   &:last-child
-    margin-bottom: 0
+    border-bottom: none
 
-.result-set-header
+.prev-satz-nr
+  font-size: 12px
+  color: #888
+  min-width: 52px
+
+.prev-satz-data
+  flex: 1
+  font-size: 13px
+  font-weight: 500
+
+.prev-satz-actions
+  display: flex
+  align-items: center
+
+.erhoehen-btn
+  color: #ccc
+
+  &.active
+    color: #f44336
+
+// ── Satzformular ─────────────────────────────────────────────────────────────
+.satz-form
+  padding-top: 4px
+
+.satz-meta-row
   display: flex
   align-items: center
   justify-content: space-between
   gap: 8px
+  margin-bottom: 10px
+  flex-wrap: wrap
+
+.steigerung-hint
+  font-size: 12px
+  color: #888
+
+.erhoehen-toggle-btn
+  font-size: 12px
+  height: 32px
+  line-height: 32px
+
+  &.active
+    border-color: #f44336
+    color: #f44336
+
+.satz-save-btn
+  width: 100%
+
+// ── Navigations-Buttons ───────────────────────────────────────────────────────
+.nav-buttons
+  display: flex
+  gap: 10px
+  margin-bottom: 20px
+  flex-wrap: wrap
+
+  button
+    flex: 1
+
+// ── Kein Übung-Hinweis ────────────────────────────────────────────────────────
+.no-exercise-hint
+  text-align: center
+  padding: 32px 16px
+  color: #888
+
+  mat-icon
+    font-size: 48px
+    width: 48px
+    height: 48px
+    color: #ccc
+
+  p
+    margin: 8px 0 16px
+
+// ── Manueller Picker ─────────────────────────────────────────────────────────
+.picker-card
+  margin-bottom: 16px
+  border-radius: 12px !important
+
+.picker-hint
+  font-size: 13px
+  color: #888
+  margin-bottom: 10px
+
+.picker-row
+  display: flex
+  align-items: center
+  gap: 8px
+  padding: 10px 0
+  border-bottom: 1px solid #f5f5f5
+  cursor: pointer
+
+  &:last-child
+    border-bottom: none
+
+  &:hover:not(.picker-locked)
+    background: #f8fdf9
+
+  &.picker-locked
+    cursor: default
+    opacity: 0.65
+
+.picker-info
+  flex: 1
+  display: flex
+  flex-direction: column
+  gap: 2px
+
+.picker-order
+  font-size: 11px
+  font-weight: 700
+  color: #607d8b
+
+.picker-name
+  font-size: 14px
+  font-weight: 600
+
+  &.locked-text
+    color: #b0b8c0
+
+.picker-lock
+  font-size: 11px
+  color: #b71c1c
+
+.picker-saetze
+  font-size: 12px
+  color: #888
+  white-space: nowrap
+
+.picker-chevron
+  color: #ccc
+
+// ── Ergebnisse (abgeschlossen) ────────────────────────────────────────────────
+.ergebnis-gruppe
+  margin-bottom: 12px
+  border-radius: 10px !important
+
+.result-set-card
+  border: 1px solid #e4e7eb
+  border-radius: 8px
+  padding: 10px
   margin-bottom: 8px
 
+  &:last-child
+    margin-bottom: 0
+
 .result-set-title
-  font-size: 13px
+  font-size: 12px
   font-weight: 700
-  color: #455a64
+  color: #607d8b
+  display: block
+  margin-bottom: 6px
 
 .result-set-grid
   display: grid
@@ -207,8 +293,8 @@
   display: flex
   flex-direction: column
   gap: 2px
-  padding: 8px
-  border-radius: 8px
+  padding: 6px 8px
+  border-radius: 6px
   background: #f7f9fb
 
 .result-label
@@ -216,80 +302,17 @@
   color: #6b7280
 
 .result-value
-  font-size: 14px
+  font-size: 13px
   font-weight: 600
   color: #1f2937
 
 .result-flag
-  margin-top: 8px
+  margin-top: 6px
   font-size: 11px
   font-weight: 600
   color: #b45309
 
-.satz-row
-  display: flex
-  align-items: center
-  padding: 6px 0
-  border-bottom: 1px solid #f5f5f5
-
-  &:last-child
-    border-bottom: none
-
-.satz-nr
-  font-size: 12px
-  color: #888
-  min-width: 55px
-
-.satz-data
-  flex: 1
-  font-size: 14px
-  font-weight: 500
-
-.satz-actions
-  display: flex
-  align-items: center
-
-.erhoehen-btn
-  color: #ccc
-
-  &.active
-    color: #f44336
-
-.erhoehen-icon
-  color: #f44336
-  font-size: 18px
-
-.extra-card
-  margin-bottom: 8px
-  border-radius: 10px !important
-
-  mat-card-content
-    padding: 12px !important
-
-.extra-row
-  display: flex
-  align-items: center
-  gap: 8px
-
-  mat-icon
-    color: #1b5e20
-
-.extra-info
-  flex: 1
-  display: flex
-  flex-direction: column
-
-.extra-name
-  font-size: 14px
-  font-weight: 500
-
-.extra-meta
-  font-size: 12px
-  color: #888
-
-.actions-row
-  margin-bottom: 16px
-
+// ── Shared ────────────────────────────────────────────────────────────────────
 .input-row
   display: flex
   gap: 8px
@@ -297,30 +320,20 @@
 
 .flex-field
   flex: 1
-  min-width: 120px
+  min-width: 110px
 
 .satz-nr-field
-  width: 80px
+  width: 72px
 
 .full-width
   width: 100%
 
-.form-actions
-  display: flex
-  justify-content: flex-end
-  gap: 8px
-  margin-top: 8px
-
 .empty-state
   text-align: center
   color: #888
-  padding: 32px
+  padding: 24px
 
-@media (min-width: 768px)
-  .uebungen-grid
-    grid-template-columns: repeat(2, minmax(0, 1fr))
-
-@media (max-width: 680px)
+@media (max-width: 480px)
   .session-header
     flex-direction: column
 
@@ -328,5 +341,5 @@
     width: 100%
     justify-content: space-between
 
-  .result-set-grid
-    grid-template-columns: 1fr
+  .nav-buttons button
+    min-width: 0

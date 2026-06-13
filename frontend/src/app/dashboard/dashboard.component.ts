@@ -36,7 +36,7 @@ export class DashboardComponent implements OnInit {
     this.sessionService.getAll().subscribe({
       next: (sessions) => {
         const sessionList = Array.isArray(sessions) ? sessions : [];
-        this.recentSessions = sessionList.filter(s => s.abgeschlossen).slice(0, 5);
+        this.recentSessions = sessionList.filter(s => s.abgeschlossen).slice(0, 1);
         this.loading = false;
       },
     });

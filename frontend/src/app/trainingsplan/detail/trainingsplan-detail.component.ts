@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -22,7 +22,7 @@ const DEFAULT_WEIGHT_INCREMENT = 2.5;
   templateUrl: './trainingsplan-detail.component.html',
   styleUrls: ['./trainingsplan-detail.component.sass'],
   imports: [
-    CommonModule, ReactiveFormsModule, RouterLink,
+    CommonModule, ReactiveFormsModule,
     MatCardModule, MatButtonModule, MatIconModule,
     MatInputModule, MatFormFieldModule, MatSelectModule,
     MatDividerModule,
@@ -91,7 +91,7 @@ export class TrainingsplanDetailComponent implements OnInit {
     this.uebungForm = this.fb.group({
       name: [normalizedUebung?.name ?? '', [Validators.required]],
       hinweis: [normalizedUebung?.hinweis ?? ''],
-      gewicht_steigerung: [normalizedUebung?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT, [Validators.required, Validators.min(0.5)]],
+      gewicht_steigerung: [normalizedUebung?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT, [Validators.min(0)]],
       vorgaenger: [normalizedUebung?.vorgaenger ?? null],
       nachfolger: [normalizedUebung?.nachfolger_id ?? this.findNachfolgerId(normalizedUebung?.id ?? null)],
       reihenfolge: [normalizedUebung?.reihenfolge ?? (this.plan?.uebungen?.length ?? 0)],

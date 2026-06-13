@@ -43,6 +43,10 @@ export const routes: Routes = [
         path: 'statistik',
         loadComponent: () => import('./statistik/statistik.component').then(m => m.StatistikComponent),
       },
+      {
+        path: 'profil',
+        loadComponent: () => import('./profil/profil.component').then(m => m.ProfilComponent),
+      },
     ]
   },
   { path: '**', redirectTo: 'dashboard' }
