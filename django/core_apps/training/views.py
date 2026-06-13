@@ -1,5 +1,6 @@
 from rest_framework import generics, permissions
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from django.utils import timezone
 from .models import Trainingsplan, Uebung, TrainingSession, SatzErgebnis, ExtraUebung
@@ -77,7 +78,7 @@ class TrainingSessionListCreateView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 
-class TrainingSessionDetailView(generics.RetrieveUpdateAPIView):
+class TrainingSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer_class(self):
@@ -101,6 +102,9 @@ class TrainingSessionDetailView(generics.RetrieveUpdateAPIView):
                 )
         serializer.save()
 
+    def perform_destroy(self, instance):
+        instance.delete()
+
 
 class SatzErgebnisListCreateView(generics.ListCreateAPIView):
     serializer_class = SatzErgebnisSerializer
@@ -116,8 +120,21 @@ class SatzErgebnisListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         session_id = self.kwargs["session_id"]
         session = TrainingSession.objects.get(id=session_id, user=self.request.user)
+
+        if session.abgeschlossen:
+            raise ValidationError({"detail": "Abgeschlossene Sessions können nicht mehr bearbeitet werden."})
+
         # Snapshot the exercise name
         uebung = serializer.validated_data.get("uebung")
+
+        if uebung and uebung.vorgaenger_id:
+            predecessor_done = session.satz_ergebnisse.filter(uebung_id=uebung.vorgaenger_id).exists()
+            if not predecessor_done:
+                predecessor_name = uebung.vorgaenger.name
+                raise ValidationError({
+                    "uebung": [f"{predecessor_name} muss zuerst abgeschlossen werden."],
+                })
+
         uebung_name = uebung.name if uebung else serializer.validated_data.get("uebung_name", "")
         serializer.save(session=session, uebung_name=uebung_name)
 
@@ -144,6 +161,10 @@ class ExtraUebungListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         session_id = self.kwargs["session_id"]
         session = TrainingSession.objects.get(id=session_id, user=self.request.user)
+
+        if session.abgeschlossen:
+            raise ValidationError({"detail": "Abgeschlossene Sessions können nicht mehr bearbeitet werden."})
+
         serializer.save(session=session)
 
 

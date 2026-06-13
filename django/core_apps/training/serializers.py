@@ -125,7 +125,7 @@ class SatzErgebnisSerializer(serializers.ModelSerializer):
             "id", "session", "uebung", "uebung_name",
             "satz_nummer", "wiederholungen", "gewicht", "gewicht_erhoehen",
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "session"]
 
 
 class ExtraUebungSerializer(serializers.ModelSerializer):
@@ -135,7 +135,7 @@ class ExtraUebungSerializer(serializers.ModelSerializer):
             "id", "session", "name", "typ",
             "dauer_minuten", "distanz_km", "notiz",
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "session"]
 
 
 class TrainingSessionSerializer(serializers.ModelSerializer):
@@ -148,6 +148,7 @@ class TrainingSessionSerializer(serializers.ModelSerializer):
         fields = [
             "id", "trainingsplan", "trainingsplan_name",
             "datum", "abgeschlossen", "abgeschlossen_am",
+            "warmup_abgeschlossen", "warmup_dauer_minuten", "warmup_notiz",
             "notiz", "satz_ergebnisse", "extra_uebungen",
         ]
         read_only_fields = ["id", "datum", "trainingsplan_name"]
@@ -167,6 +168,7 @@ class TrainingSessionListSerializer(serializers.ModelSerializer):
         fields = [
             "id", "trainingsplan", "trainingsplan_name",
             "datum", "abgeschlossen", "abgeschlossen_am",
+            "warmup_abgeschlossen",
             "notiz", "saetze_count",
         ]
         read_only_fields = ["id", "datum"]

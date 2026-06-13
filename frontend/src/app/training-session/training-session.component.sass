@@ -1,6 +1,6 @@
 .page
   padding: 16px
-  max-width: 600px
+  max-width: 920px
   margin: 0 auto
 
 .loading
@@ -10,7 +10,8 @@
 .session-header
   display: flex
   align-items: flex-start
-  gap: 8px
+  justify-content: space-between
+  gap: 12px
   margin-bottom: 16px
 
 .session-info
@@ -30,13 +31,20 @@
   white-space: nowrap
   flex-shrink: 0
 
+.completed-actions
+  display: flex
+  align-items: center
+  gap: 10px
+
+.delete-completed-btn
+  white-space: nowrap
+
 .badge-done
   display: flex
   align-items: center
   gap: 4px
   color: #1b5e20
   font-weight: 500
-
 
 .warmup-card
   margin-bottom: 16px
@@ -51,6 +59,9 @@
   mat-icon
     color: #ef6c00
 
+.warmup-title-content
+  flex: 1
+
 .warmup-title
   font-size: 14px
   font-weight: 600
@@ -60,6 +71,20 @@
   font-size: 13px
   color: #666
   white-space: pre-line
+
+.warmup-form
+  margin-top: 12px
+
+.warmup-actions
+  justify-content: flex-start
+
+.warmup-summary
+  margin-top: 12px
+  display: flex
+  flex-direction: column
+  gap: 4px
+  font-size: 13px
+  color: #555
 
 .tabs
   margin: 0 -16px
@@ -74,40 +99,70 @@
 
 .uebungen-grid
   display: grid
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr))
-  gap: 8px
+  grid-template-columns: 1fr
+  gap: 10px
   margin-bottom: 16px
 
 .uebung-chip
   cursor: pointer
   border-radius: 10px !important
   transition: all 0.15s
+  border: 1px solid transparent
 
   &:hover, &.selected
     background: #e8f5e9 !important
-    border: 2px solid #1b5e20
+    border: 1px solid #1b5e20
+
+  &.locked
+    cursor: not-allowed
+    opacity: 0.85
+    background: #fafafa
+    border: 1px solid #d9d9d9
+
+    &:hover
+      background: #fafafa !important
+      border: 1px solid #d9d9d9
 
   mat-card-content
-    padding: 10px 8px !important
+    padding: 12px !important
     display: flex
     flex-direction: column
-    align-items: center
-    gap: 2px
+    align-items: flex-start
+    gap: 4px
+
+.chip-top-row
+  width: 100%
+  display: flex
+  justify-content: space-between
+  align-items: center
+  gap: 8px
+
+.chip-order
+  font-size: 11px
+  font-weight: 700
+  color: #607d8b
+  background: #eceff1
+  border-radius: 999px
+  padding: 2px 8px
+
+.chip-lock
+  font-size: 11px
+  color: #b71c1c
+  font-weight: 600
 
 .chip-name
-  font-size: 12px
+  font-size: 14px
   font-weight: 600
-  text-align: center
-
-.chip-weight
-  font-size: 11px
-  color: #1565c0
-  font-weight: 500
+  text-align: left
 
 .chip-increment
-  font-size: 11px
+  font-size: 12px
   color: #ef6c00
   font-weight: 500
+
+.chip-lock-reason
+  font-size: 11px
+  color: #b71c1c
 
 .satz-form-card
   margin-top: 16px
@@ -119,7 +174,57 @@
   border-radius: 10px !important
 
   mat-card-content
-    padding: 8px 16px !important
+    padding: 10px 16px !important
+
+.result-set-card
+  border: 1px solid #e4e7eb
+  border-radius: 10px
+  padding: 10px
+  margin-bottom: 8px
+  background: #fff
+
+  &:last-child
+    margin-bottom: 0
+
+.result-set-header
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: 8px
+  margin-bottom: 8px
+
+.result-set-title
+  font-size: 13px
+  font-weight: 700
+  color: #455a64
+
+.result-set-grid
+  display: grid
+  grid-template-columns: repeat(2, minmax(0, 1fr))
+  gap: 8px
+
+.result-field
+  display: flex
+  flex-direction: column
+  gap: 2px
+  padding: 8px
+  border-radius: 8px
+  background: #f7f9fb
+
+.result-label
+  font-size: 11px
+  color: #6b7280
+
+.result-value
+  font-size: 14px
+  font-weight: 600
+  color: #1f2937
+
+.result-flag
+  margin-top: 8px
+  font-size: 11px
+  font-weight: 600
+  color: #b45309
 
 .satz-row
   display: flex
@@ -146,6 +251,7 @@
 
 .erhoehen-btn
   color: #ccc
+
   &.active
     color: #f44336
 
@@ -191,10 +297,10 @@
 
 .flex-field
   flex: 1
-  min-width: 80px
+  min-width: 120px
 
 .satz-nr-field
-  width: 70px
+  width: 80px
 
 .full-width
   width: 100%
@@ -209,3 +315,18 @@
   text-align: center
   color: #888
   padding: 32px
+
+@media (min-width: 768px)
+  .uebungen-grid
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+
+@media (max-width: 680px)
+  .session-header
+    flex-direction: column
+
+  .completed-actions
+    width: 100%
+    justify-content: space-between
+
+  .result-set-grid
+    grid-template-columns: 1fr

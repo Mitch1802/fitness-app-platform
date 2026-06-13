@@ -74,6 +74,9 @@ class TrainingSession(models.Model):
     datum = models.DateTimeField(auto_now_add=True)
     abgeschlossen = models.BooleanField(default=False)
     abgeschlossen_am = models.DateTimeField(null=True, blank=True)
+    warmup_abgeschlossen = models.BooleanField(default=False)
+    warmup_dauer_minuten = models.IntegerField(null=True, blank=True)
+    warmup_notiz = models.TextField(blank=True)
     notiz = models.TextField(blank=True)
 
     class Meta:

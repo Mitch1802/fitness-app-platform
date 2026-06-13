@@ -32,6 +32,10 @@ export class TrainingSessionService {
     return this.api.patch<TrainingSession>('training/sessions', id, data, false);
   }
 
+  delete(id: number): Observable<void> {
+    return this.api.delete<void>('training/sessions', id);
+  }
+
   abschliessen(id: number): Observable<TrainingSession> {
     return this.update(id, { abgeschlossen: true });
   }

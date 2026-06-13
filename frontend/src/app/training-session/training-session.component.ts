@@ -43,8 +43,11 @@ export class TrainingSessionComponent implements OnInit {
   uebungen: Uebung[] = [];
   loading = true;
   abschliessen_saving = false;
+  warmupSaving = false;
+  deletingCompletedSession = false;
 
   satzForm!: FormGroup;
+  warmupForm!: FormGroup;
   selectedUebungId: number | null = null;
   showSatzForm = false;
 
@@ -54,6 +57,7 @@ export class TrainingSessionComponent implements OnInit {
   activeTab = 0;
 
   ngOnInit(): void {
+    this.initForms();
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       this.loadSession(Number(idParam));
@@ -68,25 +72,93 @@ export class TrainingSessionComponent implements OnInit {
         },
       });
     }
-    this.initForms();
+  }
+
+  get sortedUebungen(): Uebung[] {
+    return [...this.uebungen].sort((a, b) => {
+      const orderA = typeof a.reihenfolge === 'number' ? a.reihenfolge : Number.MAX_SAFE_INTEGER;
+      const orderB = typeof b.reihenfolge === 'number' ? b.reihenfolge : Number.MAX_SAFE_INTEGER;
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+      return a.id - b.id;
+    });
+  }
+
+  get canGoNextExercise(): boolean {
+    return !!this.getNextUnlockedExercise(this.selectedUebungId);
+  }
+
+  get warmupDisplayText(): string {
+    const text = this.plan?.aufwaermen?.trim();
+    return text && text.length > 0
+      ? text
+      : 'Kein fester Plantext hinterlegt. Trage trotzdem dein Aufwaermen fuer das Tracking ein.';
+  }
+
+  get ergebnisseByUebung(): { uebung_name: string; uebung_id: number | null; saetze: SatzErgebnis[] }[] {
+    if (!this.session) return [];
+
+    const map = new Map<string, { uebung_name: string; uebung_id: number | null; saetze: SatzErgebnis[] }>();
+    for (const s of this.session.satz_ergebnisse) {
+      const key = s.uebung_name || `id:${s.uebung}`;
+      if (!map.has(key)) {
+        map.set(key, { uebung_name: s.uebung_name, uebung_id: s.uebung, saetze: [] });
+      }
+      map.get(key)!.saetze.push(s);
+    }
+
+    const orderMap = new Map<number, number>();
+    this.sortedUebungen.forEach((exercise, index) => orderMap.set(exercise.id, index));
+
+    return Array.from(map.values()).sort((a, b) => {
+      const orderA = a.uebung_id !== null ? (orderMap.get(a.uebung_id) ?? Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER;
+      const orderB = b.uebung_id !== null ? (orderMap.get(b.uebung_id) ?? Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER;
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+      return a.uebung_name.localeCompare(b.uebung_name, 'de');
+    });
+  }
+
+  get selectedUebung(): Uebung | null {
+    return this.uebungen.find((uebung) => uebung.id === this.selectedUebungId) ?? null;
+  }
+
+  get selectedSteigerungText(): string {
+    const steigerung = this.selectedUebung?.gewicht_steigerung ?? null;
+    return steigerung === null ? 'x' : String(steigerung);
   }
 
   loadSession(id: number): void {
+    this.loading = true;
     this.service.get(id).subscribe({
       next: (session) => {
         this.session = this.normalizeSession(session);
-        this.loading = false;
+        this.patchWarmupForm();
+
         if (session.trainingsplan) {
           this.planService.get(session.trainingsplan).subscribe({
             next: (plan) => {
               this.plan = this.normalizePlan(plan);
               this.uebungen = this.plan.uebungen;
+              this.loading = false;
+            },
+            error: () => {
+              this.plan = null;
+              this.uebungen = [];
+              this.loading = false;
             },
           });
         } else {
           this.plan = null;
           this.uebungen = [];
+          this.loading = false;
         }
+      },
+      error: () => {
+        this.loading = false;
+        this.snackBar.open('Training konnte nicht geladen werden.', 'OK', { duration: 2500 });
       },
     });
   }
@@ -101,6 +173,12 @@ export class TrainingSessionComponent implements OnInit {
       gewicht_erhoehen: [false],
     });
 
+    this.warmupForm = this.fb.group({
+      warmup_abgeschlossen: [false],
+      warmup_dauer_minuten: [null, [Validators.min(0)]],
+      warmup_notiz: [''],
+    });
+
     this.extraForm = this.fb.group({
       name: ['', Validators.required],
       typ: [''],
@@ -110,29 +188,33 @@ export class TrainingSessionComponent implements OnInit {
     });
   }
 
-  get ergebnisseByUebung(): { uebung_name: string; uebung_id: number | null; saetze: SatzErgebnis[] }[] {
-    if (!this.session) return [];
-    const map = new Map<string, { uebung_name: string; uebung_id: number | null; saetze: SatzErgebnis[] }>();
-    for (const s of this.session.satz_ergebnisse) {
-      const key = s.uebung_name || `id:${s.uebung}`;
-      if (!map.has(key)) {
-        map.set(key, { uebung_name: s.uebung_name, uebung_id: s.uebung, saetze: [] });
-      }
-      map.get(key)!.saetze.push(s);
+  hasExerciseResult(uebungId: number): boolean {
+    if (!this.session) {
+      return false;
     }
-    return Array.from(map.values());
+    return this.session.satz_ergebnisse.some((satz) => satz.uebung === uebungId);
   }
 
-  get selectedUebung(): Uebung | null {
-    return this.uebungen.find(uebung => uebung.id === this.selectedUebungId) ?? null;
+  isExerciseLocked(uebung: Uebung): boolean {
+    if (!uebung.vorgaenger) {
+      return false;
+    }
+    return !this.hasExerciseResult(uebung.vorgaenger);
   }
 
-  get selectedSteigerungText(): string {
-    const steigerung = this.selectedUebung?.gewicht_steigerung ?? null;
-    return steigerung === null ? 'x' : String(steigerung);
+  getExerciseLockReason(uebung: Uebung): string {
+    if (!uebung.vorgaenger) {
+      return '';
+    }
+    return `${uebung.vorgaenger_name ?? 'Vorgaengeruebung'} zuerst erledigen`;
   }
 
   selectUebung(uebung: Uebung): void {
+    if (this.isExerciseLocked(uebung)) {
+      this.snackBar.open(this.getExerciseLockReason(uebung), 'OK', { duration: 2500 });
+      return;
+    }
+
     this.selectedUebungId = uebung.id;
     const nextSatzNr = this.getNextSatzNr(uebung.id, uebung.name);
     const plannedSatz = uebung.saetze[nextSatzNr - 1] ?? uebung.saetze[0];
@@ -148,6 +230,72 @@ export class TrainingSessionComponent implements OnInit {
     this.showExtraForm = false;
   }
 
+  saveWarmup(continueWithExercise = false): void {
+    if (this.warmupForm.invalid || !this.session || this.warmupSaving || this.session.abgeschlossen) {
+      return;
+    }
+
+    this.warmupSaving = true;
+    const value = this.warmupForm.value;
+    const payload: Partial<TrainingSession> = {
+      warmup_abgeschlossen: Boolean(value.warmup_abgeschlossen),
+      warmup_dauer_minuten: value.warmup_dauer_minuten === '' || value.warmup_dauer_minuten === undefined
+        ? null
+        : value.warmup_dauer_minuten,
+      warmup_notiz: String(value.warmup_notiz ?? ''),
+    };
+
+    this.service.update(this.session.id, payload)
+      .pipe(finalize(() => { this.warmupSaving = false; }))
+      .subscribe({
+        next: (updated) => {
+          this.session = this.normalizeSession(updated);
+          this.patchWarmupForm();
+          this.snackBar.open('Aufwaermen gespeichert.', '', { duration: 1500 });
+
+          if (continueWithExercise) {
+            this.openFirstUnlockedExercise();
+          }
+        },
+        error: (error: unknown) => {
+          this.snackBar.open(this.extractErrorMessage(error, 'Aufwaermen konnte nicht gespeichert werden.'), 'OK', { duration: 2800 });
+        },
+      });
+  }
+
+  openFirstUnlockedExercise(): void {
+    const firstUnlocked = this.getNextUnlockedExercise(null);
+    if (!firstUnlocked) {
+      this.snackBar.open('Keine freigeschaltete Uebung verfuegbar.', 'OK', { duration: 2200 });
+      return;
+    }
+    this.selectUebung(firstUnlocked);
+  }
+
+  selectNextExercise(): void {
+    const next = this.getNextUnlockedExercise(this.selectedUebungId);
+    if (!next) {
+      this.snackBar.open('Keine weitere freigeschaltete Uebung verfuegbar.', 'OK', { duration: 2200 });
+      return;
+    }
+    this.selectUebung(next);
+  }
+
+  private getNextUnlockedExercise(fromExerciseId: number | null): Uebung | null {
+    const sorted = this.sortedUebungen;
+    if (sorted.length === 0) {
+      return null;
+    }
+
+    if (fromExerciseId === null) {
+      return sorted.find((exercise) => !this.isExerciseLocked(exercise)) ?? null;
+    }
+
+    const startIndex = sorted.findIndex((exercise) => exercise.id === fromExerciseId);
+    const candidates = startIndex >= 0 ? sorted.slice(startIndex + 1) : sorted;
+    return candidates.find((exercise) => !this.isExerciseLocked(exercise)) ?? null;
+  }
+
   private parseWdh(wdh: string | undefined): number {
     if (!wdh) return 10;
     const first = String(wdh).split(/[-\/,]/)[0].trim();
@@ -158,7 +306,7 @@ export class TrainingSessionComponent implements OnInit {
   getNextSatzNr(uebungId: number | null, uebungName: string): number {
     if (!this.session) return 1;
     const vorhandene = this.session.satz_ergebnisse.filter(
-      s => s.uebung === uebungId || s.uebung_name === uebungName
+      (s) => s.uebung === uebungId || s.uebung_name === uebungName
     );
     return vorhandene.length + 1;
   }
@@ -180,6 +328,9 @@ export class TrainingSessionComponent implements OnInit {
         this.snackBar.open(`Satz ${satz.satz_nummer} gespeichert!`, '', { duration: 1500 });
         this.satzForm.patchValue({ satz_nummer: satz.satz_nummer + 1, gewicht_erhoehen: false });
       },
+      error: (error: unknown) => {
+        this.snackBar.open(this.extractErrorMessage(error, 'Satz konnte nicht gespeichert werden.'), 'OK', { duration: 3000 });
+      },
     });
   }
 
@@ -187,7 +338,7 @@ export class TrainingSessionComponent implements OnInit {
     const newVal = !satz.gewicht_erhoehen;
     this.service.updateSatz(satz.id, { gewicht_erhoehen: newVal }).subscribe({
       next: (updated) => {
-        const idx = this.session!.satz_ergebnisse.findIndex(s => s.id === updated.id);
+        const idx = this.session!.satz_ergebnisse.findIndex((s) => s.id === updated.id);
         if (idx >= 0) this.session!.satz_ergebnisse[idx] = updated;
       },
     });
@@ -196,7 +347,7 @@ export class TrainingSessionComponent implements OnInit {
   deleteSatz(id: number): void {
     this.service.deleteSatz(id).subscribe({
       next: () => {
-        this.session!.satz_ergebnisse = this.session!.satz_ergebnisse.filter(s => s.id !== id);
+        this.session!.satz_ergebnisse = this.session!.satz_ergebnisse.filter((s) => s.id !== id);
       },
     });
   }
@@ -209,7 +360,10 @@ export class TrainingSessionComponent implements OnInit {
         this.session!.extra_uebungen.push(extra);
         this.extraForm.reset();
         this.showExtraForm = false;
-        this.snackBar.open('Extra-Übung hinzugefügt', '', { duration: 1500 });
+        this.snackBar.open('Extra-Uebung hinzugefuegt', '', { duration: 1500 });
+      },
+      error: (error: unknown) => {
+        this.snackBar.open(this.extractErrorMessage(error, 'Extra-Uebung konnte nicht gespeichert werden.'), 'OK', { duration: 2800 });
       },
     });
   }
@@ -217,14 +371,14 @@ export class TrainingSessionComponent implements OnInit {
   deleteExtra(id: number): void {
     this.service.deleteExtra(id).subscribe({
       next: () => {
-        this.session!.extra_uebungen = this.session!.extra_uebungen.filter(e => e.id !== id);
+        this.session!.extra_uebungen = this.session!.extra_uebungen.filter((e) => e.id !== id);
       },
     });
   }
 
   trainingAbschliessen(): void {
     if (!this.session || this.abschliessen_saving) return;
-    if (!confirm('Training abschließen? Gewichtssteigerungen werden angewendet.')) return;
+    if (!confirm('Training abschliessen? Gewichtssteigerungen werden angewendet.')) return;
     this.abschliessen_saving = true;
     this.service.abschliessen(this.session.id).pipe(finalize(() => (this.abschliessen_saving = false))).subscribe({
       next: () => {
@@ -234,13 +388,59 @@ export class TrainingSessionComponent implements OnInit {
     });
   }
 
+  deleteCompletedTraining(): void {
+    if (!this.session || !this.session.abgeschlossen || this.deletingCompletedSession) {
+      return;
+    }
+
+    if (!confirm('Abgeschlossenes Training wirklich loeschen?')) {
+      return;
+    }
+
+    this.deletingCompletedSession = true;
+    this.service.delete(this.session.id)
+      .pipe(finalize(() => {
+        this.deletingCompletedSession = false;
+      }))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Training geloescht.', 'OK', { duration: 2000 });
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error: unknown) => {
+          this.snackBar.open(this.extractErrorMessage(error, 'Training konnte nicht geloescht werden.'), 'OK', { duration: 3000 });
+        },
+      });
+  }
+
   formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    return new Date(dateStr).toLocaleString('de-DE', {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  private patchWarmupForm(): void {
+    if (!this.session || !this.warmupForm) {
+      return;
+    }
+
+    this.warmupForm.patchValue({
+      warmup_abgeschlossen: Boolean(this.session.warmup_abgeschlossen),
+      warmup_dauer_minuten: this.session.warmup_dauer_minuten,
+      warmup_notiz: this.session.warmup_notiz,
+    });
   }
 
   private normalizeSession(session: TrainingSession): TrainingSession {
     return {
       ...session,
+      warmup_abgeschlossen: Boolean(session.warmup_abgeschlossen),
+      warmup_dauer_minuten: session.warmup_dauer_minuten ?? null,
+      warmup_notiz: typeof session.warmup_notiz === 'string' ? session.warmup_notiz : '',
       satz_ergebnisse: Array.isArray(session.satz_ergebnisse) ? session.satz_ergebnisse : [],
       extra_uebungen: Array.isArray(session.extra_uebungen) ? session.extra_uebungen : [],
     };
@@ -254,12 +454,45 @@ export class TrainingSessionComponent implements OnInit {
       aufwaermen: typeof plan.aufwaermen === 'string' ? plan.aufwaermen : '',
       gewicht_steigerung: planIncrement,
       uebungen: Array.isArray(plan.uebungen)
-        ? plan.uebungen.map(uebung => ({
+        ? plan.uebungen.map((uebung) => ({
             ...uebung,
             saetze: Array.isArray(uebung.saetze) ? uebung.saetze : [],
             gewicht_steigerung: uebung.gewicht_steigerung ?? planIncrement,
           }))
         : [],
     };
+  }
+
+  private extractErrorMessage(error: unknown, fallback: string): string {
+    const errorObj = error as { error?: unknown; message?: string };
+    const payload = errorObj?.error;
+
+    if (typeof payload === 'string' && payload.trim().length > 0) {
+      return payload;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const detail = (payload as { detail?: unknown }).detail;
+      if (typeof detail === 'string' && detail.trim().length > 0) {
+        return detail;
+      }
+
+      const firstEntry = Object.entries(payload as Record<string, unknown>)[0];
+      if (firstEntry) {
+        const [, value] = firstEntry;
+        if (Array.isArray(value) && value.length > 0) {
+          return String(value[0]);
+        }
+        if (typeof value === 'string') {
+          return value;
+        }
+      }
+    }
+
+    if (typeof errorObj?.message === 'string' && errorObj.message.trim().length > 0) {
+      return errorObj.message;
+    }
+
+    return fallback;
   }
 }
