@@ -1,6 +1,6 @@
 ﻿import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, finalize } from 'rxjs';
+import { BehaviorSubject, Observable, finalize, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -69,7 +69,11 @@ export class ApiHttpService {
       }
     }
 
-    return this.withLoading(this.http.get<T>(url, { headers, params }));
+    return this.withLoading(
+      this.http.get<unknown>(url, { headers, params }).pipe(
+        map((response) => this.normalizeGetResponse<T>(response))
+      )
+    );
   }
 
   getURL<T = unknown>(url: string): Observable<T> {
@@ -137,6 +141,24 @@ export class ApiHttpService {
     allow_missing_db?: boolean;
   }): Observable<unknown> {
     return this.post('files/cleanup-orphans', payload, false);
+  }
+
+  private normalizeGetResponse<T>(response: unknown): T {
+    if (Array.isArray(response)) {
+      return response as T;
+    }
+
+    if (this.isPaginatedResponse(response)) {
+      return response.results as T;
+    }
+
+    return response as T;
+  }
+
+  private isPaginatedResponse(response: unknown): response is { results: unknown[] } {
+    return Boolean(response)
+      && typeof response === 'object'
+      && Array.isArray((response as { results?: unknown }).results);
   }
 
   private buildQueryParams(param?: Record<string, unknown>): HttpParams {

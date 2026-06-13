@@ -52,6 +52,8 @@ docker compose up --build
 open http://localhost
 ```
 
+Wenn du das Frontend lokal mit `ng serve` auf `http://localhost:4200` startest und gegen eine API mit Cookie-Auth arbeitest, muss diese Origin serverseitig in `CORS_ALLOWED_ORIGINS` / `CSRF_TRUSTED_ORIGINS` erlaubt sein. In der Beispiel-Env ist `http://localhost:4200` bereits enthalten.
+
 ## API Endpunkte
 
 | Methode | URL | Beschreibung |
