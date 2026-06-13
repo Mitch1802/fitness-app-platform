@@ -35,67 +35,61 @@
     </div>
 
     <!-- Aufwärmen -->
-    <mat-card class="warmup-card">
-      <mat-card-content>
-        <div class="warmup-title-row">
-          <mat-icon>local_fire_department</mat-icon>
-          <div class="warmup-title-content">
-            <div class="warmup-label">Aufwärmen</div>
-            @if (plan?.aufwaermen) {
-              <div class="warmup-text">{{ plan!.aufwaermen }}</div>
+    @if (!selectedUebung && !showManualPicker) {
+      <mat-card class="warmup-card">
+        <mat-card-content>
+          <div class="warmup-title-row">
+            <mat-icon>local_fire_department</mat-icon>
+            <div class="warmup-title-content">
+              <div class="warmup-label">Aufwärmen</div>
+              @if (plan?.aufwaermen) {
+                <div class="warmup-text">{{ plan!.aufwaermen }}</div>
+              }
+            </div>
+            @if (session.warmup_abgeschlossen) {
+              <mat-icon class="warmup-done-icon">check_circle</mat-icon>
             }
           </div>
-          @if (session.warmup_abgeschlossen) {
-            <mat-icon class="warmup-done-icon">check_circle</mat-icon>
-          }
-        </div>
 
-        @if (!session.abgeschlossen) {
-          <form [formGroup]="warmupForm" class="warmup-form">
-            <div class="input-row">
-              <mat-form-field class="flex-field">
-                <mat-label>Dauer (Minuten)</mat-label>
-                <input matInput type="number" min="0" formControlName="warmup_dauer_minuten" />
-                <mat-hint>Eintragen = als erledigt markiert</mat-hint>
-              </mat-form-field>
-              <mat-form-field class="flex-field">
-                <mat-label>Notiz</mat-label>
-                <input matInput formControlName="warmup_notiz" />
-              </mat-form-field>
-            </div>
-            <div class="warmup-actions">
-              <button mat-stroked-button type="button"
-                (click)="saveWarmup()" [disabled]="warmupSaving">Speichern</button>
-              <button mat-flat-button color="primary" type="button"
-                (click)="saveWarmup(true)" [disabled]="warmupSaving">
-                <mat-icon>arrow_forward</mat-icon> Zur ersten Übung
-              </button>
-            </div>
-          </form>
-        } @else {
-          @if (session.warmup_dauer_minuten !== null || session.warmup_notiz) {
-            <div class="warmup-summary">
-              @if (session.warmup_dauer_minuten !== null) {
-                <span>{{ session.warmup_dauer_minuten }} Min</span>
-              }
-              @if (session.warmup_notiz) {
-                <span>{{ session.warmup_notiz }}</span>
-              }
-            </div>
+          @if (!session.abgeschlossen) {
+            <form [formGroup]="warmupForm" class="warmup-form">
+              <div class="input-row">
+                <mat-form-field class="flex-field">
+                  <mat-label>Dauer (Minuten)</mat-label>
+                  <input matInput type="number" min="0" formControlName="warmup_dauer_minuten" />
+                </mat-form-field>
+              </div>
+            </form>
+          } @else {
+            @if (session.warmup_dauer_minuten !== null || session.warmup_notiz) {
+              <div class="warmup-summary">
+                @if (session.warmup_dauer_minuten !== null) {
+                  <span>{{ session.warmup_dauer_minuten }} Min</span>
+                }
+                @if (session.warmup_notiz) {
+                  <span>{{ session.warmup_notiz }}</span>
+                }
+              </div>
+            }
           }
-        }
-      </mat-card-content>
-    </mat-card>
+        </mat-card-content>
+      </mat-card>
+    }
 
     <!-- Aktive Übung -->
     @if (!session.abgeschlossen) {
-      @if (selectedUebung) {
+      @if (selectedUebung && !showManualPicker) {
         <mat-card class="uebung-active-card">
           <mat-card-header>
             <mat-card-title>
               <span class="uebung-order">#{{ selectedUebung.reihenfolge || 1 }}</span>
               {{ selectedUebung.name }}
             </mat-card-title>
+            @if (selectedUebung.saetze.length > 0) {
+              <mat-card-subtitle>
+                {{ selectedUebung.saetze.length }} Sätze geplant
+              </mat-card-subtitle>
+            }
             @if (selectedUebung.hinweis) {
               <mat-card-subtitle>{{ selectedUebung.hinweis }}</mat-card-subtitle>
             }
@@ -124,9 +118,39 @@
             </mat-card-content>
           }
 
+          <mat-card-content class="planned-saetze-content">
+            <div class="planned-saetze-title">Geplante Sätze</div>
+            @if (selectedUebung.saetze.length > 0) {
+              <div class="planned-saetze-list">
+                @for (satz of selectedUebung.saetze; track satz.nr) {
+                  <div class="planned-satz-row">
+                    <span class="planned-satz-nr">Satz {{ satz.nr }}</span>
+                    <div class="planned-satz-data">
+                      <span>{{ satz.wdh }} Wdh</span>
+                      @if (satz.gewicht !== undefined && satz.gewicht !== null) {
+                        <span>{{ satz.gewicht }} kg</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="planned-saetze-empty">Keine Sätze geplant.</div>
+            }
+          </mat-card-content>
+
           <!-- Neuer Satz -->
           <mat-card-content>
             <form [formGroup]="satzForm" (ngSubmit)="saveSatz()" class="satz-form">
+              <div class="satz-progress-row">
+                <span class="satz-progress-label">Aktuell</span>
+                <span class="satz-progress-value">
+                  Satz {{ satzForm.get('satz_nummer')?.value }}
+                  @if (selectedUebung.saetze.length > 0) {
+                    / {{ selectedUebung.saetze.length }}
+                  }
+                </span>
+              </div>
               <div class="input-row">
                 <mat-form-field class="flex-field">
                   <mat-label>Gewicht (kg)</mat-label>
@@ -142,7 +166,6 @@
                 </mat-form-field>
               </div>
               <div class="satz-meta-row">
-                <span class="steigerung-hint">+{{ selectedSteigerungText }} kg Steigerung</span>
                 <button mat-stroked-button type="button" class="erhoehen-toggle-btn"
                   [class.active]="satzForm.get('gewicht_erhoehen')?.value"
                   (click)="satzForm.patchValue({gewicht_erhoehen: !satzForm.get('gewicht_erhoehen')?.value})">
@@ -169,21 +192,31 @@
           </button>
         </div>
 
-      } @else {
+      } @else if (!showManualPicker) {
         <div class="no-exercise-hint">
           <mat-icon>fitness_center</mat-icon>
           <p>Wähle eine Übung, um zu starten.</p>
-          <button mat-flat-button color="primary" (click)="showManualPicker = true">
-            <mat-icon>list</mat-icon> Übung auswählen
-          </button>
+          <div class="no-exercise-actions">
+            <button mat-flat-button color="primary" (click)="showManualPicker = true">
+              <mat-icon>list</mat-icon> Übung auswählen
+            </button>
+            <button mat-flat-button color="primary" type="button" (click)="saveWarmup(true)" [disabled]="warmupSaving">
+              <mat-icon>arrow_forward</mat-icon> Zur ersten Übung
+            </button>
+          </div>
         </div>
       }
 
       <!-- Manueller Übungs-Picker -->
       @if (showManualPicker) {
         <mat-card class="picker-card">
-          <mat-card-header>
+          <mat-card-header class="picker-card-header">
             <mat-card-title>Übung auswählen</mat-card-title>
+            @if (selectedUebung) {
+              <button mat-stroked-button color="primary" type="button" (click)="closeManualPicker()">
+                <mat-icon>arrow_back</mat-icon> Zur Übung
+              </button>
+            }
           </mat-card-header>
           <mat-card-content>
             @if (sortedUebungen.length === 0) {

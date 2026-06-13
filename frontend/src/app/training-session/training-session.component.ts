@@ -130,11 +130,6 @@ export class TrainingSessionComponent implements OnInit {
     return this.uebungen.find((uebung) => uebung.id === this.selectedUebungId) ?? null;
   }
 
-  get selectedSteigerungText(): string {
-    const steigerung = this.selectedUebung?.gewicht_steigerung ?? null;
-    return steigerung === null ? 'x' : String(steigerung);
-  }
-
   loadSession(id: number): void {
     this.loading = true;
     this.service.get(id).subscribe({
@@ -220,6 +215,10 @@ export class TrainingSessionComponent implements OnInit {
     }
     this.showManualPicker = false;
     this.selectUebung(uebung);
+  }
+
+  closeManualPicker(): void {
+    this.showManualPicker = false;
   }
 
   selectUebung(uebung: Uebung): void {
@@ -487,7 +486,7 @@ export class TrainingSessionComponent implements OnInit {
         ? plan.uebungen.map((uebung) => ({
             ...uebung,
             saetze: Array.isArray(uebung.saetze) ? uebung.saetze : [],
-            gewicht_steigerung: uebung.gewicht_steigerung ?? planIncrement,
+            gewicht_steigerung: uebung.gewicht_steigerung ?? null,
           }))
         : [],
     };

@@ -104,6 +104,13 @@
   border-radius: 12px !important
   border-left: 3px solid #1b5e20
 
+  mat-card-header
+    margin-bottom: 8px
+
+  mat-card-subtitle
+    margin-top: 4px
+    line-height: 1.35
+
 .uebung-order
   font-size: 12px
   font-weight: 700
@@ -152,16 +159,78 @@
   &.active
     color: #f44336
 
+.planned-saetze-content
+  padding-top: 2px
+  padding-bottom: 14px !important
+
+.planned-saetze-title
+  font-size: 12px
+  font-weight: 600
+  color: #888
+  margin-bottom: 8px
+
+.planned-saetze-list
+  display: flex
+  flex-direction: column
+  gap: 6px
+
+.planned-satz-row
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: 8px
+  padding: 6px 0
+  border-bottom: 1px solid #f5f5f5
+
+  &:last-child
+    border-bottom: none
+
+.planned-satz-nr
+  font-size: 12px
+  color: #888
+  min-width: 52px
+
+.planned-satz-data
+  flex: 1
+  display: flex
+  justify-content: flex-end
+  gap: 8px
+  font-size: 13px
+  font-weight: 500
+  text-align: right
+  color: #1b5e20
+
+  span
+    white-space: nowrap
+
 // ── Satzformular ─────────────────────────────────────────────────────────────
 .satz-form
-  padding-top: 4px
+  padding-top: 10px
+
+.satz-progress-row
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: 10px
+  margin-bottom: 12px
+  font-size: 12px
+
+.satz-progress-label
+  color: #888
+  font-weight: 600
+  letter-spacing: 0.02em
+
+.satz-progress-value
+  color: #1b5e20
+  font-weight: 700
 
 .satz-meta-row
   display: flex
   align-items: center
   justify-content: space-between
   gap: 8px
-  margin-bottom: 10px
+  margin-top: 10px
+  margin-bottom: 16px
   flex-wrap: wrap
 
 .steigerung-hint
@@ -178,6 +247,7 @@
     color: #f44336
 
 .satz-save-btn
+  margin-top: 0
   width: 100%
 
 // ── Navigations-Buttons ───────────────────────────────────────────────────────
@@ -205,10 +275,23 @@
   p
     margin: 8px 0 16px
 
+.no-exercise-actions
+  display: flex
+  gap: 8px
+  justify-content: center
+  flex-wrap: wrap
+  margin-top: 4px
+
 // ── Manueller Picker ─────────────────────────────────────────────────────────
 .picker-card
   margin-bottom: 16px
   border-radius: 12px !important
+
+.picker-card-header
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: 8px
 
 .picker-hint
   font-size: 13px

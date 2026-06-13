@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -22,7 +22,7 @@ const DEFAULT_WEIGHT_INCREMENT = 2.5;
   templateUrl: './trainingsplan-detail.component.html',
   styleUrls: ['./trainingsplan-detail.component.sass'],
   imports: [
-    CommonModule, ReactiveFormsModule,
+    CommonModule, ReactiveFormsModule, RouterLink,
     MatCardModule, MatButtonModule, MatIconModule,
     MatInputModule, MatFormFieldModule, MatSelectModule,
     MatDividerModule,
@@ -45,6 +45,7 @@ export class TrainingsplanDetailComponent implements OnInit {
   loading = true;
   isNew = false;
   saving = false;
+  deletingPlan = false;
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
@@ -85,13 +86,16 @@ export class TrainingsplanDetailComponent implements OnInit {
   }
 
   initUebungForm(uebung: Uebung | null): void {
-    const normalizedUebung = uebung ? this.normalizeExercise(uebung, this.plan?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT) : null;
+    const normalizedUebung = uebung ? this.normalizeExercise(uebung) : null;
     const initialSaetze = normalizedUebung?.saetze ?? [];
+    const initialSteigerung = normalizedUebung?.gewicht_steigerung && Number(normalizedUebung.gewicht_steigerung) > 0
+      ? normalizedUebung.gewicht_steigerung
+      : null;
 
     this.uebungForm = this.fb.group({
       name: [normalizedUebung?.name ?? '', [Validators.required]],
       hinweis: [normalizedUebung?.hinweis ?? ''],
-      gewicht_steigerung: [normalizedUebung?.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT, [Validators.min(0)]],
+      gewicht_steigerung: [initialSteigerung, [Validators.min(0)]],
       vorgaenger: [normalizedUebung?.vorgaenger ?? null],
       nachfolger: [normalizedUebung?.nachfolger_id ?? this.findNachfolgerId(normalizedUebung?.id ?? null)],
       reihenfolge: [normalizedUebung?.reihenfolge ?? (this.plan?.uebungen?.length ?? 0)],
@@ -229,8 +233,29 @@ export class TrainingsplanDetailComponent implements OnInit {
     });
   }
 
+  deletePlan(): void {
+    if (!this.plan || this.deletingPlan || this.isNew) {
+      return;
+    }
+
+    if (!confirm(`"${this.plan.name}" wirklich löschen?`)) {
+      return;
+    }
+
+    this.deletingPlan = true;
+    this.service.delete(this.plan.id)
+      .pipe(finalize(() => { this.deletingPlan = false; }))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Plan gelöscht', 'OK', { duration: 2000 });
+          this.router.navigate(['/plaene']);
+        },
+      });
+  }
+
   private buildUebungPayload(): Partial<Uebung> {
     const raw = this.uebungForm.getRawValue();
+    const rawSteigerung = raw.gewicht_steigerung;
     const saetze = Array.isArray(raw.saetze)
       ? raw.saetze.map((satz: Satz, index: number) => ({
           nr: index + 1,
@@ -242,7 +267,9 @@ export class TrainingsplanDetailComponent implements OnInit {
     return {
       name: raw.name,
       hinweis: raw.hinweis ?? '',
-      gewicht_steigerung: Number(raw.gewicht_steigerung ?? DEFAULT_WEIGHT_INCREMENT),
+      gewicht_steigerung: rawSteigerung === '' || rawSteigerung === null || rawSteigerung === undefined
+        ? 0
+        : Number(rawSteigerung),
       vorgaenger: raw.vorgaenger ?? null,
       reihenfolge: Number(raw.reihenfolge ?? 0),
       saetze,
@@ -279,19 +306,19 @@ export class TrainingsplanDetailComponent implements OnInit {
       ...plan,
       aufwaermen: typeof plan.aufwaermen === 'string' ? plan.aufwaermen : '',
       gewicht_steigerung: planIncrement,
-      uebungen: this.normalizeExercises(plan.uebungen, planIncrement),
+      uebungen: this.normalizeExercises(plan.uebungen),
     };
   }
 
-  private normalizeExercises(rawUebungen: unknown, planIncrement: number): Uebung[] {
-    return Array.isArray(rawUebungen) ? rawUebungen.map(uebung => this.normalizeExercise(uebung as Uebung, planIncrement)) : [];
+  private normalizeExercises(rawUebungen: unknown): Uebung[] {
+    return Array.isArray(rawUebungen) ? rawUebungen.map(uebung => this.normalizeExercise(uebung as Uebung)) : [];
   }
 
-  private normalizeExercise(uebung: Uebung, planIncrement: number): Uebung {
+  private normalizeExercise(uebung: Uebung): Uebung {
     return {
       ...uebung,
       saetze: Array.isArray(uebung.saetze) ? uebung.saetze : [],
-      gewicht_steigerung: uebung.gewicht_steigerung ?? planIncrement,
+      gewicht_steigerung: uebung.gewicht_steigerung ?? null,
       nachfolger_id: uebung.nachfolger_id ?? null,
       nachfolger_name: uebung.nachfolger_name ?? null,
       vorgaenger: uebung.vorgaenger ?? null,

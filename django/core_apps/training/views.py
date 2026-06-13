@@ -96,7 +96,11 @@ class TrainingSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
             # Increase exercise weights where flagged
             for ergebnis in instance.satz_ergebnisse.filter(gewicht_erhoehen=True, uebung__isnull=False):
                 uebung = ergebnis.uebung
-                steigerung = uebung.gewicht_steigerung or uebung.trainingsplan.gewicht_steigerung
+                steigerung = (
+                    uebung.gewicht_steigerung
+                    if uebung.gewicht_steigerung is not None
+                    else uebung.trainingsplan.gewicht_steigerung
+                )
                 Uebung.objects.filter(pk=uebung.pk).update(
                     gewicht=uebung.gewicht + steigerung
                 )

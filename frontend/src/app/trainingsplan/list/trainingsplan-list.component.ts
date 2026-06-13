@@ -5,7 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { TrainingsplanService } from '../../_service/trainingsplan.service';
 import { TrainingsplanList } from '../../_interface/trainingsplan';
 
@@ -21,7 +21,6 @@ import { TrainingsplanList } from '../../_interface/trainingsplan';
 export class TrainingsplanListComponent implements OnInit {
   private service = inject(TrainingsplanService);
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
 
   plans: TrainingsplanList[] = [];
   loading = true;
@@ -46,16 +45,5 @@ export class TrainingsplanListComponent implements OnInit {
 
   openPlan(id: number): void {
     this.router.navigate(['/plaene', id]);
-  }
-
-  deletePlan(plan: TrainingsplanList, event: Event): void {
-    event.stopPropagation();
-    if (!confirm(`"${plan.name}" wirklich löschen?`)) return;
-    this.service.delete(plan.id).subscribe({
-      next: () => {
-        this.snackBar.open('Plan gelöscht', 'OK', { duration: 2000 });
-        this.load();
-      },
-    });
   }
 }
