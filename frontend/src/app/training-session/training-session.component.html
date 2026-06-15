@@ -162,7 +162,16 @@
                 </mat-form-field>
                 <mat-form-field class="satz-nr-field">
                   <mat-label>Satz</mat-label>
-                  <input matInput type="number" formControlName="satz_nummer" min="1" />
+                  @if (selectedUebung.saetze.length > 0) {
+                    <mat-select formControlName="satz_nummer"
+                      (selectionChange)="onSatzNrChange($event.value)">
+                      @for (satz of selectedUebung.saetze; track satz.nr) {
+                        <mat-option [value]="satz.nr">Satz {{ satz.nr }}</mat-option>
+                      }
+                    </mat-select>
+                  } @else {
+                    <input matInput type="number" formControlName="satz_nummer" min="1" />
+                  }
                 </mat-form-field>
               </div>
               <div class="satz-meta-row">

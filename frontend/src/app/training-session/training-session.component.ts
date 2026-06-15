@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TrainingSessionService } from '../_service/training-session.service';
 import { TrainingsplanService } from '../_service/trainingsplan.service';
@@ -25,7 +26,7 @@ const DEFAULT_WEIGHT_INCREMENT = 2.5;
     CommonModule, ReactiveFormsModule, DecimalPipe,
     MatCardModule, MatButtonModule, MatIconModule,
     MatInputModule, MatFormFieldModule,
-    MatChipsModule,
+    MatChipsModule, MatSelectModule,
   ],
 })
 export class TrainingSessionComponent implements OnInit {
@@ -322,6 +323,17 @@ export class TrainingSessionComponent implements OnInit {
       (s) => s.uebung === uebungId || s.uebung_name === uebungName
     );
     return vorhandene.length + 1;
+  }
+
+  onSatzNrChange(satzNr: number): void {
+    if (!this.selectedUebung) return;
+    const planned = this.selectedUebung.saetze.find(s => s.nr === satzNr);
+    if (planned) {
+      this.satzForm.patchValue({
+        wiederholungen: this.parseWdh(planned.wdh),
+        gewicht: planned.gewicht ?? this.selectedUebung.gewicht ?? 0,
+      });
+    }
   }
 
   saveSatz(): void {
