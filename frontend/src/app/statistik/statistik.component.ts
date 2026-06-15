@@ -28,6 +28,7 @@ export class StatistikComponent implements OnInit {
   data: StatistikEintrag[] = [];
   selectedUebung: StatistikEintrag | null = null;
   loading = true;
+  private lastSatzWeightByDate: Map<string, number> = new Map();
 
   chartData: ChartData<'line'> = { labels: [], datasets: [] };
   chartOptions: ChartConfiguration<'line'>['options'] = {
@@ -66,18 +67,22 @@ export class StatistikComponent implements OnInit {
 
   selectUebung(entry: StatistikEintrag): void {
     this.selectedUebung = entry;
-    // Build max weight per session date
-    const byDate = new Map<string, number>();
+    // Build last set (highest satz_nummer) weight per session date
+    const lastSatzNrByDate = new Map<string, number>();
+    this.lastSatzWeightByDate = new Map();
     for (const d of entry.daten) {
       const dateKey = d.datum.substring(0, 10);
-      const prev = byDate.get(dateKey) ?? 0;
-      if (d.gewicht > prev) byDate.set(dateKey, d.gewicht);
+      const prevNr = lastSatzNrByDate.get(dateKey) ?? -1;
+      if (d.satz_nummer > prevNr) {
+        lastSatzNrByDate.set(dateKey, d.satz_nummer);
+        this.lastSatzWeightByDate.set(dateKey, d.gewicht);
+      }
     }
-    const sortedDates = Array.from(byDate.keys()).sort();
+    const sortedDates = Array.from(this.lastSatzWeightByDate.keys()).sort();
     this.chartData = {
       labels: sortedDates.map(d => new Date(d).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' })),
       datasets: [{
-        data: sortedDates.map(d => byDate.get(d)!),
+        data: sortedDates.map(d => this.lastSatzWeightByDate.get(d)!),
         label: entry.uebung_name,
         borderColor: '#1b5e20',
         backgroundColor: 'rgba(27,94,32,0.1)',
@@ -89,8 +94,8 @@ export class StatistikComponent implements OnInit {
   }
 
   get maxGewicht(): number {
-    if (!this.selectedUebung) return 0;
-    return Math.max(...this.selectedUebung.daten.map(d => d.gewicht), 0);
+    if (!this.selectedUebung || this.lastSatzWeightByDate.size === 0) return 0;
+    return Math.max(...this.lastSatzWeightByDate.values(), 0);
   }
 
   get totalEinheiten(): number {
