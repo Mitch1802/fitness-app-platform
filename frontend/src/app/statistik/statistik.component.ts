@@ -9,7 +9,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
 import { StatistikService } from '../_service/statistik.service';
-import { StatistikDatum, StatistikEintrag } from '../_interface/statistik';
+import { StatistikEintrag } from '../_interface/statistik';
 
 @Component({
   selector: 'app-statistik',
@@ -67,18 +67,17 @@ export class StatistikComponent implements OnInit {
 
   selectUebung(entry: StatistikEintrag): void {
     this.selectedUebung = entry;
-    // Build last set (highest satz_nummer) per session date
-    const lastSatzByDate = new Map<string, StatistikDatum>();
+    // Build last set (highest satz_nummer) weight per session date
+    const lastSatzNrByDate = new Map<string, number>();
+    this.lastSatzWeightByDate = new Map();
     for (const d of entry.daten) {
       const dateKey = d.datum.substring(0, 10);
-      const prev = lastSatzByDate.get(dateKey);
-      if (!prev || d.satz_nummer > prev.satz_nummer) {
-        lastSatzByDate.set(dateKey, d);
+      const prevNr = lastSatzNrByDate.get(dateKey) ?? -1;
+      if (d.satz_nummer > prevNr) {
+        lastSatzNrByDate.set(dateKey, d.satz_nummer);
+        this.lastSatzWeightByDate.set(dateKey, d.gewicht);
       }
     }
-    this.lastSatzWeightByDate = new Map(
-      Array.from(lastSatzByDate.entries()).map(([k, v]) => [k, v.gewicht])
-    );
     const sortedDates = Array.from(this.lastSatzWeightByDate.keys()).sort();
     this.chartData = {
       labels: sortedDates.map(d => new Date(d).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' })),
