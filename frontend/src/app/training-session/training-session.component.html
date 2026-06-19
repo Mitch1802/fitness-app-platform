@@ -192,7 +192,6 @@
               </div>
               <div class="input-row">
                 <mat-form-field class="flex-field">
-                  <!-- <mat-label>Satz</mat-label> -->
                   @if (selectedUebung.saetze.length > 0) {
                     <mat-select formControlName="satz_nummer"
                       (selectionChange)="onSatzNrChange($event.value)">
@@ -227,7 +226,7 @@
         <!-- Navigations-Buttons -->
         <div class="nav-buttons">
           <button mat-stroked-button (click)="showManualPicker = !showManualPicker">
-            <mat-icon>list</mat-icon> Übersicht Trainingsplan
+            <mat-icon>list</mat-icon> Trainingsplan
           </button>
           <button mat-flat-button color="primary"
             (click)="selectNextExercise()" [disabled]="!canGoNextExercise">
@@ -241,7 +240,7 @@
           <p>Wähle eine Übung, um zu starten.</p>
           <div class="no-exercise-actions">
             <button mat-flat-button color="primary" (click)="showManualPicker = true">
-              <mat-icon>list</mat-icon> Übersicht Trainingsplan
+              <mat-icon>list</mat-icon> Trainingsplan
             </button>
             <button mat-flat-button color="primary" type="button" (click)="saveWarmup(true)" [disabled]="warmupSaving">
               <mat-icon>arrow_forward</mat-icon> Zur ersten Übung
