@@ -64,7 +64,7 @@
     </div>
 
     <!-- Pausiert-Banner -->
-    @if (session.pausiert && !session.abgeschlossen) {
+    @if (session.pausiert && !session.abgeschlossen && !showDateEditor) {
       <div class="paused-banner">
         <mat-icon>pause_circle</mat-icon>
         <span>Training pausiert – mach weiter, wenn du bereit bist!</span>
@@ -75,7 +75,7 @@
     }
 
     <!-- Aufwärmen -->
-    @if (!selectedUebung && !showManualPicker) {
+    @if (!selectedUebung && !showManualPicker && !showDateEditor) {
       <mat-card class="warmup-card">
         <mat-card-content>
           <div class="warmup-title-row">
@@ -117,7 +117,7 @@
     }
 
     <!-- Aktive Übung -->
-    @if (!session.abgeschlossen) {
+    @if (!session.abgeschlossen && !showDateEditor) {
       @if (selectedUebung && !showManualPicker) {
         <mat-card class="uebung-active-card">
           <mat-card-header>
