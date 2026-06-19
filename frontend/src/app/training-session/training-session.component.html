@@ -135,6 +135,15 @@
             }
           </mat-card-header>
 
+          <div class="satz-meta-row">
+            <button mat-stroked-button type="button" class="erhoehen-toggle-btn"
+              [class.active]="satzForm.get('gewicht_erhoehen')?.value"
+              (click)="satzForm.patchValue({gewicht_erhoehen: !satzForm.get('gewicht_erhoehen')?.value})">
+              <mat-icon>trending_up</mat-icon>
+              {{ satzForm.get('gewicht_erhoehen')?.value ? 'Steigerung markiert' : 'Nächstes Mal erhöhen?' }}
+            </button>
+          </div>
+
           <!-- Bisherige Sätze dieser Übung -->
           @if (currentExerciseSaetze.length > 0) {
             <mat-card-content class="prev-saetze-content">
@@ -144,11 +153,6 @@
                   <span class="prev-satz-nr">Satz {{ satz.satz_nummer }}</span>
                   <span class="prev-satz-data">{{ satz.gewicht | number:'1.1-2' }} kg × {{ satz.wiederholungen }} Wdh</span>
                   <div class="prev-satz-actions">
-                    <button mat-icon-button class="erhoehen-btn" [class.active]="satz.gewicht_erhoehen"
-                      (click)="toggleGewichtErhoehen(satz)"
-                      [title]="satz.gewicht_erhoehen ? 'Steigerung aktiv' : 'Gewicht erhöhen?'">
-                      <mat-icon>trending_up</mat-icon>
-                    </button>
                     <button mat-icon-button color="warn" (click)="deleteSatz(satz.id)">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
@@ -193,34 +197,26 @@
               </div>
               <div class="input-row">
                 <mat-form-field class="flex-field">
-                  <mat-label>Gewicht (kg)</mat-label>
-                  <input matInput type="number" formControlName="gewicht" step="0.5" min="0" />
-                </mat-form-field>
-                <mat-form-field class="flex-field">
-                  <mat-label>Wiederholungen</mat-label>
-                  <input matInput type="number" formControlName="wiederholungen" min="1" />
-                </mat-form-field>
-                <mat-form-field class="satz-nr-field">
                   <mat-label>Satz</mat-label>
                   @if (selectedUebung.saetze.length > 0) {
                     <mat-select formControlName="satz_nummer"
                       (selectionChange)="onSatzNrChange($event.value)">
                       @for (satz of selectedUebung.saetze; track satz.nr) {
-                        <mat-option [value]="satz.nr">Satz {{ satz.nr }}</mat-option>
+                        <mat-option [value]="satz.nr">{{ satz.nr }}</mat-option>
                       }
                     </mat-select>
                   } @else {
                     <input matInput type="number" formControlName="satz_nummer" min="1" />
                   }
                 </mat-form-field>
-              </div>
-              <div class="satz-meta-row">
-                <button mat-stroked-button type="button" class="erhoehen-toggle-btn"
-                  [class.active]="satzForm.get('gewicht_erhoehen')?.value"
-                  (click)="satzForm.patchValue({gewicht_erhoehen: !satzForm.get('gewicht_erhoehen')?.value})">
-                  <mat-icon>trending_up</mat-icon>
-                  {{ satzForm.get('gewicht_erhoehen')?.value ? 'Steigerung markiert' : 'Nächstes Mal erhöhen?' }}
-                </button>
+                <mat-form-field class="flex-field">
+                  <mat-label>kg</mat-label>
+                  <input matInput type="number" formControlName="gewicht" step="0.5" min="0" />
+                </mat-form-field>
+                <mat-form-field class="flex-field">
+                  <mat-label>Wdh</mat-label>
+                  <input matInput type="number" formControlName="wiederholungen" min="1" />
+                </mat-form-field>
               </div>
               <button mat-flat-button color="primary" type="submit"
                 class="satz-save-btn" [disabled]="satzForm.invalid">
@@ -232,12 +228,12 @@
 
         <!-- Navigations-Buttons -->
         <div class="nav-buttons">
+          <button mat-stroked-button (click)="showManualPicker = !showManualPicker">
+            <mat-icon>list</mat-icon> Übersicht Trainingsplan
+          </button>
           <button mat-flat-button color="primary"
             (click)="selectNextExercise()" [disabled]="!canGoNextExercise">
             <mat-icon>arrow_forward</mat-icon> Nächste Übung
-          </button>
-          <button mat-stroked-button (click)="showManualPicker = !showManualPicker">
-            <mat-icon>list</mat-icon> Übung wählen
           </button>
         </div>
 
@@ -247,7 +243,7 @@
           <p>Wähle eine Übung, um zu starten.</p>
           <div class="no-exercise-actions">
             <button mat-flat-button color="primary" (click)="showManualPicker = true">
-              <mat-icon>list</mat-icon> Übung auswählen
+              <mat-icon>list</mat-icon> Übersicht Trainingsplan
             </button>
             <button mat-flat-button color="primary" type="button" (click)="saveWarmup(true)" [disabled]="warmupSaving">
               <mat-icon>arrow_forward</mat-icon> Zur ersten Übung
