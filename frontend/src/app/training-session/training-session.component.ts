@@ -508,7 +508,11 @@ export class TrainingSessionComponent implements OnInit {
   saveDatum(): void {
     if (this.datumForm.invalid || !this.session || this.datumSaving) return;
     const localValue: string = this.datumForm.value.datum;
-    const isoDate = new Date(localValue).toISOString();
+    // Parse datetime-local string explicitly as local time to avoid UTC misinterpretation
+    const [datePart, timePart] = localValue.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes] = timePart.split(':').map(Number);
+    const isoDate = new Date(year, month - 1, day, hours, minutes).toISOString();
     this.datumSaving = true;
     this.service.update(this.session.id, { datum: isoDate } as Partial<TrainingSession>)
       .pipe(finalize(() => { this.datumSaving = false; }))

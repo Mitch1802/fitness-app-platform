@@ -171,7 +171,7 @@ class TrainingSessionListSerializer(serializers.ModelSerializer):
             "warmup_abgeschlossen",
             "notiz", "pausiert", "saetze_count",
         ]
-        read_only_fields = ["id", "datum"]
+        read_only_fields = ["id"]
 
     def get_trainingsplan_name(self, obj):
         if obj.trainingsplan:
