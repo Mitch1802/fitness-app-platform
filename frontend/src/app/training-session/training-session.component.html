@@ -122,9 +122,16 @@
         <mat-card class="uebung-active-card">
           <mat-card-header>
             <mat-card-title>
-              <span class="uebung-order">#{{ selectedUebung.reihenfolge || 1 }}</span>
               {{ selectedUebung.name }}
             </mat-card-title>
+          <div class="satz-meta-row">
+            <button mat-stroked-button type="button" class="erhoehen-toggle-btn"
+              [class.active]="satzForm.get('gewicht_erhoehen')?.value"
+              (click)="satzForm.patchValue({gewicht_erhoehen: !satzForm.get('gewicht_erhoehen')?.value})">
+              <mat-icon>trending_up</mat-icon>
+              {{ satzForm.get('gewicht_erhoehen')?.value ? 'Steigerung markiert' : 'Nächstes Mal erhöhen?' }}
+            </button>
+          </div>
             @if (selectedUebung.saetze.length > 0) {
               <mat-card-subtitle>
                 {{ selectedUebung.saetze.length }} Sätze geplant
@@ -134,15 +141,6 @@
               <mat-card-subtitle>{{ selectedUebung.hinweis }}</mat-card-subtitle>
             }
           </mat-card-header>
-
-          <div class="satz-meta-row">
-            <button mat-stroked-button type="button" class="erhoehen-toggle-btn"
-              [class.active]="satzForm.get('gewicht_erhoehen')?.value"
-              (click)="satzForm.patchValue({gewicht_erhoehen: !satzForm.get('gewicht_erhoehen')?.value})">
-              <mat-icon>trending_up</mat-icon>
-              {{ satzForm.get('gewicht_erhoehen')?.value ? 'Steigerung markiert' : 'Nächstes Mal erhöhen?' }}
-            </button>
-          </div>
 
           <!-- Bisherige Sätze dieser Übung -->
           @if (currentExerciseSaetze.length > 0) {
@@ -217,11 +215,14 @@
                   <mat-label>Wdh</mat-label>
                   <input matInput type="number" formControlName="wiederholungen" min="1" />
                 </mat-form-field>
+                <div class="flex-field">
+                  <button mat-flat-button color="primary" type="submit"
+                    class="satz-save-btn" [disabled]="satzForm.invalid">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </div>
               </div>
-              <button mat-flat-button color="primary" type="submit"
-                class="satz-save-btn" [disabled]="satzForm.invalid">
-                <mat-icon>add</mat-icon> Satz speichern
-              </button>
+
             </form>
           </mat-card-content>
         </mat-card>
