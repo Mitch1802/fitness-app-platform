@@ -39,7 +39,7 @@
       @if (!showDateEditor) {
         @if (!session.abgeschlossen) {
           <div class="session-header-actions">
-            <button mat-stroked-button (click)="trainingPausieren()" [disabled]="pausiert_saving">
+            <!-- <button mat-stroked-button (click)="trainingPausieren()" [disabled]="pausiert_saving">
               <mat-icon>pause_circle</mat-icon> Pause
             </button>
             <button mat-stroked-button color="warn"
@@ -49,6 +49,17 @@
             <button mat-flat-button color="accent"
               (click)="trainingAbschliessen()" [disabled]="abschliessen_saving">
               <mat-icon>done_all</mat-icon> Abschließen
+            </button> -->
+            <button mat-stroked-button (click)="trainingPausieren()" [disabled]="pausiert_saving">
+              <mat-icon>pause_circle</mat-icon>
+            </button>
+            <button mat-stroked-button color="warn"
+              (click)="trainingAbbrechen()" [disabled]="abbrechen_saving">
+              <mat-icon>close</mat-icon>
+            </button>
+            <button mat-flat-button color="accent"
+              (click)="trainingAbschliessen()" [disabled]="abschliessen_saving">
+              <mat-icon>done_all</mat-icon>
             </button>
           </div>
         } @else {
