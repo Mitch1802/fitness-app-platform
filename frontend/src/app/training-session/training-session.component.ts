@@ -45,9 +45,13 @@ export class TrainingSessionComponent implements OnInit {
   abbrechen_saving = false;
   warmupSaving = false;
   deletingCompletedSession = false;
+  pausiert_saving = false;
+  showDateEditor = false;
+  datumSaving = false;
 
   satzForm!: FormGroup;
   warmupForm!: FormGroup;
+  datumForm!: FormGroup;
   selectedUebungId: number | null = null;
   showSatzForm = false;
 
@@ -177,6 +181,10 @@ export class TrainingSessionComponent implements OnInit {
     this.warmupForm = this.fb.group({
       warmup_dauer_minuten: [null, [Validators.min(0)]],
       warmup_notiz: [''],
+    });
+
+    this.datumForm = this.fb.group({
+      datum: ['', Validators.required],
     });
 
     this.extraForm = this.fb.group({
@@ -455,6 +463,77 @@ export class TrainingSessionComponent implements OnInit {
       });
   }
 
+  trainingPausieren(): void {
+    if (!this.session || this.session.abgeschlossen || this.pausiert_saving) return;
+    this.pausiert_saving = true;
+    this.service.update(this.session.id, { pausiert: true })
+      .pipe(finalize(() => { this.pausiert_saving = false; }))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Training pausiert. Du kannst es jederzeit fortsetzen.', 'OK', { duration: 3000 });
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error: unknown) => {
+          this.snackBar.open(this.extractErrorMessage(error, 'Pausieren fehlgeschlagen.'), 'OK', { duration: 3000 });
+        },
+      });
+  }
+
+  trainingFortsetzen(): void {
+    if (!this.session || this.session.abgeschlossen || this.pausiert_saving) return;
+    this.pausiert_saving = true;
+    this.service.update(this.session.id, { pausiert: false })
+      .pipe(finalize(() => { this.pausiert_saving = false; }))
+      .subscribe({
+        next: (updated) => {
+          this.session = this.normalizeSession(updated);
+          this.snackBar.open('Training fortgesetzt.', '', { duration: 1500 });
+        },
+        error: (error: unknown) => {
+          this.snackBar.open(this.extractErrorMessage(error, 'Fortsetzen fehlgeschlagen.'), 'OK', { duration: 3000 });
+        },
+      });
+  }
+
+  openDateEditor(): void {
+    if (!this.session) return;
+    this.datumForm.patchValue({ datum: this.toDatetimeLocal(this.session.datum) });
+    this.showDateEditor = true;
+  }
+
+  cancelDateEditor(): void {
+    this.showDateEditor = false;
+  }
+
+  saveDatum(): void {
+    if (this.datumForm.invalid || !this.session || this.datumSaving) return;
+    const localValue: string = this.datumForm.value.datum;
+    // Parse datetime-local string explicitly as local time to avoid UTC misinterpretation
+    const [datePart, timePart] = localValue.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes] = timePart.split(':').map(Number);
+    const isoDate = new Date(year, month - 1, day, hours, minutes).toISOString();
+    this.datumSaving = true;
+    this.service.update(this.session.id, { datum: isoDate } as Partial<TrainingSession>)
+      .pipe(finalize(() => { this.datumSaving = false; }))
+      .subscribe({
+        next: (updated) => {
+          this.session = this.normalizeSession(updated);
+          this.showDateEditor = false;
+          this.snackBar.open('Datum gespeichert.', '', { duration: 1500 });
+        },
+        error: (error: unknown) => {
+          this.snackBar.open(this.extractErrorMessage(error, 'Datum konnte nicht gespeichert werden.'), 'OK', { duration: 3000 });
+        },
+      });
+  }
+
+  private toDatetimeLocal(iso: string): string {
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
   formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleString('de-DE', {
       weekday: 'short',
@@ -482,6 +561,7 @@ export class TrainingSessionComponent implements OnInit {
       warmup_abgeschlossen: Boolean(session.warmup_abgeschlossen),
       warmup_dauer_minuten: session.warmup_dauer_minuten ?? null,
       warmup_notiz: typeof session.warmup_notiz === 'string' ? session.warmup_notiz : '',
+      pausiert: Boolean(session.pausiert),
       satz_ergebnisse: Array.isArray(session.satz_ergebnisse) ? session.satz_ergebnisse : [],
       extra_uebungen: Array.isArray(session.extra_uebungen) ? session.extra_uebungen : [],
     };

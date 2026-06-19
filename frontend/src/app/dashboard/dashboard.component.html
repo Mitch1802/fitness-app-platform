@@ -3,13 +3,16 @@
   @if (activeSession) {
     <mat-card class="active-session-card" color="warn">
       <mat-card-header>
-        <mat-icon mat-card-avatar color="warn">play_circle</mat-icon>
-        <mat-card-title>Aktives Training</mat-card-title>
+        <mat-icon mat-card-avatar [color]="activeSession.pausiert ? '' : 'warn'">
+          {{ activeSession.pausiert ? 'pause_circle' : 'play_circle' }}
+        </mat-icon>
+        <mat-card-title>{{ activeSession.pausiert ? 'Pausiertes Training' : 'Aktives Training' }}</mat-card-title>
         <mat-card-subtitle>{{ activeSession.trainingsplan_name ?? 'Freies Training' }}</mat-card-subtitle>
       </mat-card-header>
       <mat-card-actions>
         <button mat-flat-button color="primary" (click)="continueSession()">
-          <mat-icon>arrow_forward</mat-icon> Weiter trainieren
+          <mat-icon>{{ activeSession.pausiert ? 'play_arrow' : 'arrow_forward' }}</mat-icon>
+          {{ activeSession.pausiert ? 'Fortsetzen' : 'Weiter trainieren' }}
         </button>
       </mat-card-actions>
     </mat-card>

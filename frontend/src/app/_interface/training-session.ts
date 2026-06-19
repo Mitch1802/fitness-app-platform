@@ -30,6 +30,7 @@ export interface TrainingSession {
   warmup_dauer_minuten: number | null;
   warmup_notiz: string;
   notiz: string;
+  pausiert: boolean;
   satz_ergebnisse: SatzErgebnis[];
   extra_uebungen: ExtraUebung[];
 }
@@ -43,5 +44,6 @@ export interface TrainingSessionList {
   abgeschlossen_am: string | null;
   warmup_abgeschlossen: boolean;
   notiz: string;
+  pausiert: boolean;
   saetze_count: number;
 }
