@@ -123,15 +123,12 @@
           <mat-card-header>
             <mat-card-title>
               {{ selectedUebung.name }}
+              <button mat-stroked-button type="button" class="erhoehen-toggle-btn"
+                [class.active]="satzForm.get('gewicht_erhoehen')?.value"
+                (click)="satzForm.patchValue({gewicht_erhoehen: !satzForm.get('gewicht_erhoehen')?.value})">
+                <mat-icon>trending_up</mat-icon>
+              </button>
             </mat-card-title>
-          <div class="satz-meta-row">
-            <button mat-stroked-button type="button" class="erhoehen-toggle-btn"
-              [class.active]="satzForm.get('gewicht_erhoehen')?.value"
-              (click)="satzForm.patchValue({gewicht_erhoehen: !satzForm.get('gewicht_erhoehen')?.value})">
-              <mat-icon>trending_up</mat-icon>
-              {{ satzForm.get('gewicht_erhoehen')?.value ? 'Steigerung markiert' : 'Nächstes Mal erhöhen?' }}
-            </button>
-          </div>
             @if (selectedUebung.saetze.length > 0) {
               <mat-card-subtitle>
                 {{ selectedUebung.saetze.length }} Sätze geplant
@@ -195,7 +192,7 @@
               </div>
               <div class="input-row">
                 <mat-form-field class="flex-field">
-                  <mat-label>Satz</mat-label>
+                  <!-- <mat-label>Satz</mat-label> -->
                   @if (selectedUebung.saetze.length > 0) {
                     <mat-select formControlName="satz_nummer"
                       (selectionChange)="onSatzNrChange($event.value)">
