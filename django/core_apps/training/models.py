@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 
 class Trainingsplan(models.Model):
@@ -71,8 +72,9 @@ class TrainingSession(models.Model):
         on_delete=models.SET_NULL,
         related_name="sessions",
     )
-    datum = models.DateTimeField(auto_now_add=True)
+    datum = models.DateTimeField(default=timezone.now)
     abgeschlossen = models.BooleanField(default=False)
+    pausiert = models.BooleanField(default=False)
     abgeschlossen_am = models.DateTimeField(null=True, blank=True)
     warmup_abgeschlossen = models.BooleanField(default=False)
     warmup_dauer_minuten = models.IntegerField(null=True, blank=True)

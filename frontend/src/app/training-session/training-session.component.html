@@ -10,10 +10,37 @@
     <div class="session-header">
       <div class="session-info">
         <h1 class="session-title">{{ session.trainingsplan_name ?? 'Freies Training' }}</h1>
-        <p class="session-date">{{ formatDate(session.datum) }}</p>
+        @if (showDateEditor) {
+          <form [formGroup]="datumForm" (ngSubmit)="saveDatum()" class="date-editor-form">
+            <mat-form-field class="date-editor-field">
+              <mat-label>Datum / Uhrzeit</mat-label>
+              <input matInput type="datetime-local" formControlName="datum" />
+            </mat-form-field>
+            <div class="date-editor-actions">
+              <button mat-flat-button color="primary" type="submit" [disabled]="datumForm.invalid || datumSaving">
+                <mat-icon>save</mat-icon> Speichern
+              </button>
+              <button mat-stroked-button type="button" (click)="cancelDateEditor()">
+                Abbrechen
+              </button>
+            </div>
+          </form>
+        } @else {
+          <div class="session-date-row">
+            <p class="session-date">{{ formatDate(session.datum) }}</p>
+            @if (!session.abgeschlossen) {
+              <button mat-icon-button class="date-edit-btn" title="Datum ändern" (click)="openDateEditor()">
+                <mat-icon>edit_calendar</mat-icon>
+              </button>
+            }
+          </div>
+        }
       </div>
       @if (!session.abgeschlossen) {
         <div class="session-header-actions">
+          <button mat-stroked-button (click)="trainingPausieren()" [disabled]="pausiert_saving">
+            <mat-icon>pause_circle</mat-icon> Pause
+          </button>
           <button mat-stroked-button color="warn"
             (click)="trainingAbbrechen()" [disabled]="abbrechen_saving">
             <mat-icon>close</mat-icon> Abbrechen
@@ -33,6 +60,17 @@
         </div>
       }
     </div>
+
+    <!-- Pausiert-Banner -->
+    @if (session.pausiert && !session.abgeschlossen) {
+      <div class="paused-banner">
+        <mat-icon>pause_circle</mat-icon>
+        <span>Training pausiert – mach weiter wenn du bereit bist!</span>
+        <button mat-stroked-button color="primary" (click)="trainingFortsetzen()" [disabled]="pausiert_saving">
+          <mat-icon>play_arrow</mat-icon> Fortsetzen
+        </button>
+      </div>
+    }
 
     <!-- Aufwärmen -->
     @if (!selectedUebung && !showManualPicker) {

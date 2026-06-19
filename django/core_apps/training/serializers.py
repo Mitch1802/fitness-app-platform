@@ -149,9 +149,9 @@ class TrainingSessionSerializer(serializers.ModelSerializer):
             "id", "trainingsplan", "trainingsplan_name",
             "datum", "abgeschlossen", "abgeschlossen_am",
             "warmup_abgeschlossen", "warmup_dauer_minuten", "warmup_notiz",
-            "notiz", "satz_ergebnisse", "extra_uebungen",
+            "notiz", "pausiert", "satz_ergebnisse", "extra_uebungen",
         ]
-        read_only_fields = ["id", "datum", "trainingsplan_name"]
+        read_only_fields = ["id", "trainingsplan_name"]
 
     def get_trainingsplan_name(self, obj):
         if obj.trainingsplan:
@@ -169,7 +169,7 @@ class TrainingSessionListSerializer(serializers.ModelSerializer):
             "id", "trainingsplan", "trainingsplan_name",
             "datum", "abgeschlossen", "abgeschlossen_am",
             "warmup_abgeschlossen",
-            "notiz", "saetze_count",
+            "notiz", "pausiert", "saetze_count",
         ]
         read_only_fields = ["id", "datum"]
 
