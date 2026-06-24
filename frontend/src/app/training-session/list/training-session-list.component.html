@@ -1,0 +1,47 @@
+<div class="page">
+  <div class="page-header">
+    <button mat-icon-button routerLink="/dashboard" aria-label="Zurück">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="page-title">Alle Trainings</h1>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Lade...</div>
+  }
+
+  @if (!loading && sessions.length === 0) {
+    <div class="empty-state">
+      <mat-icon>fitness_center</mat-icon>
+      <p>Noch keine abgeschlossenen Trainings.</p>
+    </div>
+  }
+
+  @if (!loading && sessions.length > 0) {
+    <div class="sessions-list">
+      @for (session of sessions; track session.id) {
+        <mat-card class="session-item" [routerLink]="['/session', session.id]">
+          <mat-card-content>
+            <div class="session-row">
+              <mat-icon [class.active-icon]="!session.abgeschlossen && !session.pausiert"
+                        [class.paused-icon]="session.pausiert">
+                {{ session.abgeschlossen ? 'event' : (session.pausiert ? 'pause_circle' : 'play_circle') }}
+              </mat-icon>
+              <div class="session-info">
+                <span class="session-plan">{{ session.trainingsplan_name ?? 'Freies Training' }}</span>
+                <span class="session-date">{{ formatDate(session.datum) }}</span>
+                <span class="session-meta">
+                  {{ session.saetze_count }} Sätze
+                  @if (!session.abgeschlossen) {
+                    · {{ session.pausiert ? 'Pausiert' : 'Aktiv' }}
+                  }
+                </span>
+              </div>
+              <mat-icon>chevron_right</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

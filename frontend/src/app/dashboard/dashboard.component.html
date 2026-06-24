@@ -41,7 +41,12 @@
 
   @if (recentSessions.length > 0) {
     <section class="section">
-      <h2 class="section-title">Letzte Trainings</h2>
+      <div class="section-header-row">
+        <h2 class="section-title">Letzte Trainings</h2>
+        <a mat-button routerLink="/sessions" class="see-all-link">
+          Alle <mat-icon>chevron_right</mat-icon>
+        </a>
+      </div>
       <div class="sessions-list">
         @for (session of recentSessions; track session.id) {
           <mat-card class="session-item" [routerLink]="['/session', session.id]">
@@ -58,6 +63,16 @@
           </mat-card>
         }
       </div>
+    </section>
+  } @else {
+    <section class="section">
+      <div class="section-header-row">
+        <h2 class="section-title">Letzte Trainings</h2>
+        <a mat-button routerLink="/sessions" class="see-all-link">
+          Alle <mat-icon>chevron_right</mat-icon>
+        </a>
+      </div>
+      <p class="no-sessions-hint">Noch keine abgeschlossenen Trainings.</p>
     </section>
   }
 

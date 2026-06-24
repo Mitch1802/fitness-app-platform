@@ -96,14 +96,26 @@ class TrainingSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
             # Increase exercise weights where flagged
             for ergebnis in instance.satz_ergebnisse.filter(gewicht_erhoehen=True, uebung__isnull=False):
                 uebung = ergebnis.uebung
-                steigerung = (
-                    uebung.gewicht_steigerung
-                    if uebung.gewicht_steigerung is not None
-                    else uebung.trainingsplan.gewicht_steigerung
-                )
-                Uebung.objects.filter(pk=uebung.pk).update(
-                    gewicht=uebung.gewicht + steigerung
-                )
+                verfuegbare = uebung.verfuegbare_gewichte
+                if verfuegbare and isinstance(verfuegbare, list) and len(verfuegbare) > 0:
+                    # Advance to next higher weight in the available list
+                    try:
+                        gewichte = sorted(float(g) for g in verfuegbare if g is not None)
+                    except (TypeError, ValueError):
+                        gewichte = []
+                    current = float(uebung.gewicht)
+                    next_gewichte = [g for g in gewichte if g > current]
+                    if next_gewichte:
+                        Uebung.objects.filter(pk=uebung.pk).update(gewicht=next_gewichte[0])
+                else:
+                    steigerung = (
+                        uebung.gewicht_steigerung
+                        if uebung.gewicht_steigerung is not None
+                        else uebung.trainingsplan.gewicht_steigerung
+                    )
+                    Uebung.objects.filter(pk=uebung.pk).update(
+                        gewicht=uebung.gewicht + steigerung
+                    )
         serializer.save()
 
     def perform_destroy(self, instance):

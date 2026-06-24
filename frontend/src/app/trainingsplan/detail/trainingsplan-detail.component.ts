@@ -92,15 +92,32 @@ export class TrainingsplanDetailComponent implements OnInit {
       ? normalizedUebung.gewicht_steigerung
       : null;
 
+    const verfGewichteArr = normalizedUebung?.verfuegbare_gewichte ?? [];
+    const verfGewichteText = verfGewichteArr.length > 0
+      ? verfGewichteArr.map(g => String(g)).join('; ')
+      : '';
+
+    // For new exercises, default reihenfolge to max existing + 1
+    const nextReihenfolge = normalizedUebung !== null
+      ? normalizedUebung.reihenfolge
+      : this.computeNextReihenfolge();
+
     this.uebungForm = this.fb.group({
       name: [normalizedUebung?.name ?? '', [Validators.required]],
       hinweis: [normalizedUebung?.hinweis ?? ''],
       gewicht_steigerung: [initialSteigerung, [Validators.min(0)]],
+      verfuegbare_gewichte_text: [verfGewichteText],
       vorgaenger: [normalizedUebung?.vorgaenger ?? null],
       nachfolger: [normalizedUebung?.nachfolger_id ?? this.findNachfolgerId(normalizedUebung?.id ?? null)],
-      reihenfolge: [normalizedUebung?.reihenfolge ?? (this.plan?.uebungen?.length ?? 0)],
+      reihenfolge: [nextReihenfolge],
       saetze: this.fb.array(initialSaetze.map(s => this.satzGroup(s))),
     });
+  }
+
+  private computeNextReihenfolge(): number {
+    const uebungen = this.plan?.uebungen ?? [];
+    if (uebungen.length === 0) return 1;
+    return uebungen.reduce((max, u) => Math.max(max, u.reihenfolge), 0) + 1;
   }
 
   satzGroup(s?: Partial<Satz>): FormGroup {
@@ -264,16 +281,29 @@ export class TrainingsplanDetailComponent implements OnInit {
         }))
       : [];
 
+    const verfuegbare_gewichte = this.parseVerfuegbareGewichte(raw.verfuegbare_gewichte_text ?? '');
+
     return {
       name: raw.name,
       hinweis: raw.hinweis ?? '',
       gewicht_steigerung: rawSteigerung === '' || rawSteigerung === null || rawSteigerung === undefined
         ? 0
         : Number(rawSteigerung),
+      verfuegbare_gewichte,
       vorgaenger: raw.vorgaenger ?? null,
       reihenfolge: Number(raw.reihenfolge ?? 0),
       saetze,
     };
+  }
+
+  private parseVerfuegbareGewichte(text: string): number[] {
+    if (!text || !text.trim()) return [];
+    return text
+      .split(/[;,]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0)
+      .map(s => parseFloat(s.replace(',', '.')))
+      .filter(n => !isNaN(n));
   }
 
   private syncNachfolger(currentId: number, desiredNachfolgerId: number | null): Observable<unknown> {
@@ -319,6 +349,7 @@ export class TrainingsplanDetailComponent implements OnInit {
       ...uebung,
       saetze: Array.isArray(uebung.saetze) ? uebung.saetze : [],
       gewicht_steigerung: uebung.gewicht_steigerung ?? null,
+      verfuegbare_gewichte: Array.isArray(uebung.verfuegbare_gewichte) ? uebung.verfuegbare_gewichte : [],
       nachfolger_id: uebung.nachfolger_id ?? null,
       nachfolger_name: uebung.nachfolger_name ?? null,
       vorgaenger: uebung.vorgaenger ?? null,
