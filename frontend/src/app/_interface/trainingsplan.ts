@@ -12,6 +12,7 @@ export interface Uebung {
   hinweis: string;
   gewicht: number;
   gewicht_steigerung: number | null;
+  verfuegbare_gewichte: number[];
   vorgaenger: number | null;
   vorgaenger_name: string | null;
   nachfolger_id: number | null;

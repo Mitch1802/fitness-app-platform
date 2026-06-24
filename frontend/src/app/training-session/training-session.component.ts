@@ -95,6 +95,12 @@ export class TrainingSessionComponent implements OnInit {
     });
   }
 
+  get selectedUebungGewichte(): number[] {
+    const gewichte = this.selectedUebung?.verfuegbare_gewichte;
+    if (!Array.isArray(gewichte) || gewichte.length === 0) return [];
+    return [...gewichte].sort((a, b) => a - b);
+  }
+
   get canGoNextExercise(): boolean {
     return !!this.getNextUnlockedExercise(this.selectedUebungId);
   }
@@ -359,7 +365,9 @@ export class TrainingSessionComponent implements OnInit {
       next: (satz) => {
         this.session!.satz_ergebnisse.push(satz);
         this.snackBar.open(`Satz ${satz.satz_nummer} gespeichert!`, '', { duration: 1500 });
-        this.satzForm.patchValue({ satz_nummer: satz.satz_nummer + 1, gewicht_erhoehen: false });
+        const nextSatzNr = satz.satz_nummer + 1;
+        this.satzForm.patchValue({ satz_nummer: nextSatzNr, gewicht_erhoehen: false });
+        this.onSatzNrChange(nextSatzNr);
       },
       error: (error: unknown) => {
         this.snackBar.open(this.extractErrorMessage(error, 'Satz konnte nicht gespeichert werden.'), 'OK', { duration: 3000 });
@@ -579,6 +587,7 @@ export class TrainingSessionComponent implements OnInit {
             ...uebung,
             saetze: Array.isArray(uebung.saetze) ? uebung.saetze : [],
             gewicht_steigerung: uebung.gewicht_steigerung ?? null,
+            verfuegbare_gewichte: Array.isArray(uebung.verfuegbare_gewichte) ? uebung.verfuegbare_gewichte : [],
           }))
         : [],
     };

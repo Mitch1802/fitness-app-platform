@@ -41,6 +41,8 @@ class Uebung(models.Model):
     gewicht = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     # Optional weight increase for this exercise. Falls back to the plan default.
     gewicht_steigerung = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    # Optional list of available weights (kg) for this exercise, e.g. [15, 17.5, 37.5]
+    verfuegbare_gewichte = models.JSONField(default=list, blank=True)
     # Optional: predecessor exercise (must be completed before this one)
     vorgaenger = models.ForeignKey(
         "self",

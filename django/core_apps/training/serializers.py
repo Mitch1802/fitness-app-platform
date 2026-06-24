@@ -11,7 +11,8 @@ class UebungSerializer(serializers.ModelSerializer):
         model = Uebung
         fields = [
             "id", "trainingsplan", "name", "saetze", "hinweis",
-            "gewicht", "gewicht_steigerung", "vorgaenger", "vorgaenger_name",
+            "gewicht", "gewicht_steigerung", "verfuegbare_gewichte",
+            "vorgaenger", "vorgaenger_name",
             "nachfolger_id", "nachfolger_name", "reihenfolge",
         ]
         read_only_fields = ["id", "trainingsplan", "vorgaenger_name", "nachfolger_id", "nachfolger_name"]
@@ -51,6 +52,19 @@ class UebungSerializer(serializers.ModelSerializer):
                 except (TypeError, ValueError):
                     raise serializers.ValidationError('"gewicht" muss eine Zahl sein.')
         return value
+
+    def validate_verfuegbare_gewichte(self, value):
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Muss eine Liste sein.")
+        result = []
+        for item in value:
+            try:
+                result.append(float(item))
+            except (TypeError, ValueError):
+                raise serializers.ValidationError("Alle Einträge müssen Zahlen sein.")
+        return result
 
     def validate(self, attrs):
         plan = attrs.get("trainingsplan") or getattr(self.instance, "trainingsplan", None)

@@ -100,8 +100,9 @@
                   <input matInput type="number" formControlName="reihenfolge" min="0" />
                 </mat-form-field>
                 <mat-form-field class="col-7">
-                  <mat-label>Steigerung (kg)</mat-label>
-                  <input matInput type="number" formControlName="gewicht_steigerung" step="0.5" min="0" />
+                  <mat-label>Verf. Gewichte (kg)</mat-label>
+                  <input matInput type="text" formControlName="verfuegbare_gewichte_text" placeholder="z.B. 15; 17,5; 37,5" />
+                  <mat-hint>Semikolon-getrennt, z.B. 15; 17,5; 37,5</mat-hint>
                 </mat-form-field>
               </div>
               @if (otherUebungen.length > 0) {
@@ -197,8 +198,11 @@
                       @if (uebung.saetze.length === 0) {
                         <span class="satz-chip neutral-chip">Ohne Sätze</span>
                       }
-                      @if (uebung.gewicht_steigerung !== null && uebung.gewicht_steigerung > 0) {
+                      @if (uebung.gewicht_steigerung !== null && uebung.gewicht_steigerung > 0 && uebung.verfuegbare_gewichte.length === 0) {
                         <span class="steigerung-chip">+{{ uebung.gewicht_steigerung }} kg</span>
+                      }
+                      @if (uebung.verfuegbare_gewichte.length > 0) {
+                        <span class="steigerung-chip">{{ uebung.verfuegbare_gewichte.join(' · ') }} kg</span>
                       }
                     </div>
                     @if (uebung.hinweis) {
