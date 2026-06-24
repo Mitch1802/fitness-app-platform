@@ -117,7 +117,7 @@ export class TrainingsplanDetailComponent implements OnInit {
   private computeNextReihenfolge(): number {
     const uebungen = this.plan?.uebungen ?? [];
     if (uebungen.length === 0) return 1;
-    return Math.max(...uebungen.map(u => u.reihenfolge)) + 1;
+    return uebungen.reduce((max, u) => Math.max(max, u.reihenfolge), 0) + 1;
   }
 
   satzGroup(s?: Partial<Satz>): FormGroup {

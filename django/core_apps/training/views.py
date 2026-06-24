@@ -99,7 +99,10 @@ class TrainingSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
                 verfuegbare = uebung.verfuegbare_gewichte
                 if verfuegbare and isinstance(verfuegbare, list) and len(verfuegbare) > 0:
                     # Advance to next higher weight in the available list
-                    gewichte = sorted(float(g) for g in verfuegbare)
+                    try:
+                        gewichte = sorted(float(g) for g in verfuegbare if g is not None)
+                    except (TypeError, ValueError):
+                        gewichte = []
                     current = float(uebung.gewicht)
                     next_gewichte = [g for g in gewichte if g > current]
                     if next_gewichte:
