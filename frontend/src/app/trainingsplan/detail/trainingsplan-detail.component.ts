@@ -2,7 +2,7 @@ import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +16,13 @@ import { Trainingsplan, Uebung, Satz } from '../../_interface/trainingsplan';
 import { finalize, forkJoin, Observable, of, switchMap } from 'rxjs';
 
 const DEFAULT_WEIGHT_INCREMENT = 2.5;
+
+function gewichtValidator(control: AbstractControl): ValidationErrors | null {
+  const raw = control.value;
+  if (raw === null || raw === undefined || raw === '' || raw === 0) return null;
+  const val = parseFloat(String(raw).replace(',', '.'));
+  return isNaN(val) || val < 0 ? { invalidGewicht: true } : null;
+}
 
 @Component({
   selector: 'app-trainingsplan-detail',
@@ -124,7 +131,7 @@ export class TrainingsplanDetailComponent implements OnInit {
     return this.fb.group({
       nr: [s?.nr ?? 1],
       wdh: [s?.wdh ?? '10', [Validators.required]],
-      gewicht: [s?.gewicht ?? '', []],
+      gewicht: [s?.gewicht ?? '', [gewichtValidator]],
     });
   }
 
