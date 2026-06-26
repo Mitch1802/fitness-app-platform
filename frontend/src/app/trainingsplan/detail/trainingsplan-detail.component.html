@@ -106,8 +106,8 @@
                 <div class="gewichte-input-row">
                   <mat-form-field class="gewicht-input-field">
                     <mat-label>Gewicht eingeben</mat-label>
-                    <input matInput type="number" [(ngModel)]="newGewichtInput" [ngModelOptions]="{standalone: true}"
-                      placeholder="z.B. 17.5" step="0.5" min="0.5"
+                    <input matInput type="text" [(ngModel)]="newGewichtInput" [ngModelOptions]="{standalone: true}"
+                      placeholder="z.B. 17.5 oder 17,5"
                       (keydown.enter)="$event.preventDefault(); addGewicht()" />
                   </mat-form-field>
                   <button mat-stroked-button type="button" (click)="addGewicht()" class="gewicht-add-btn">
@@ -183,7 +183,7 @@
                           }
                         </mat-select>
                       } @else {
-                        <input matInput type="number" formControlName="gewicht" step="0.5" min="0" />
+                        <input matInput type="text" formControlName="gewicht" placeholder="0" />
                       }
                     </mat-form-field>
                     <button mat-icon-button type="button" (click)="removeSatz(i)" color="warn">

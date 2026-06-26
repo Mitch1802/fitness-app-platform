@@ -124,7 +124,7 @@ export class TrainingsplanDetailComponent implements OnInit {
     return this.fb.group({
       nr: [s?.nr ?? 1],
       wdh: [s?.wdh ?? '10', [Validators.required]],
-      gewicht: [s?.gewicht ?? 0, [Validators.min(0)]],
+      gewicht: [s?.gewicht ?? '', []],
     });
   }
 
@@ -152,7 +152,8 @@ export class TrainingsplanDetailComponent implements OnInit {
   }
 
   addGewicht(): void {
-    const val = parseFloat(this.newGewichtInput.replace(',', '.'));
+    const input = this.newGewichtInput ?? '';
+    const val = parseFloat(input.replace(',', '.'));
     if (isNaN(val) || val <= 0) return;
     if (!this.verfuegbareGewichteList.includes(val)) {
       this.verfuegbareGewichteList = [...this.verfuegbareGewichteList, val].sort((a, b) => a - b);
@@ -290,7 +291,7 @@ export class TrainingsplanDetailComponent implements OnInit {
       ? raw.saetze.map((satz: Satz, index: number) => ({
           nr: index + 1,
           wdh: String(satz.wdh),
-          gewicht: Number(satz.gewicht ?? 0),
+          gewicht: parseFloat(String(satz.gewicht ?? '0').replace(',', '.')) || 0,
         }))
       : [];
 
