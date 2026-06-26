@@ -226,20 +226,6 @@
                     @if (uebung.nachfolger_name) {
                       <p class="uebung-meta">→ vor: {{ uebung.nachfolger_name }}</p>
                     }
-                    <div class="saetze-chips">
-                      @for (s of uebung.saetze; track s.nr) {
-                        <span class="satz-chip">{{ s.wdh }} Wdh{{ s.gewicht ? ' · ' + s.gewicht + ' kg' : '' }}</span>
-                      }
-                      @if (uebung.saetze.length === 0) {
-                        <span class="satz-chip neutral-chip">Ohne Sätze</span>
-                      }
-                      @if (uebung.gewicht_steigerung !== null && uebung.gewicht_steigerung > 0 && uebung.verfuegbare_gewichte.length === 0) {
-                        <span class="steigerung-chip">+{{ uebung.gewicht_steigerung }} kg</span>
-                      }
-                      @if (uebung.verfuegbare_gewichte.length > 0) {
-                        <span class="steigerung-chip">{{ uebung.verfuegbare_gewichte.join(' · ') }} kg</span>
-                      }
-                    </div>
                     @if (uebung.hinweis) {
                       <p class="uebung-hinweis">{{ uebung.hinweis }}</p>
                     }
