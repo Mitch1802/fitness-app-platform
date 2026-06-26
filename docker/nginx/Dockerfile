@@ -5,7 +5,8 @@ COPY ./frontend/package*.json ./
 RUN npm install --prefer-offline
 COPY ./frontend/ ./
 ARG APP_VERSION=test
-RUN ./node_modules/.bin/ng build --define "APP_VERSION=\"${APP_VERSION}\""
+ENV APP_VERSION=${APP_VERSION}
+RUN npm run build
 
 # ── Runtime Stage: Nginx ──────────────────────────────────────────────────────
 FROM nginx:1.27.4-alpine-slim
