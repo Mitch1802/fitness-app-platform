@@ -180,54 +180,61 @@
 
           <!-- Neuer Satz -->
           <mat-card-content>
-            <form [formGroup]="satzForm" (ngSubmit)="saveSatz()" class="satz-form">
-              <div class="satz-progress-row">
-                <span class="satz-progress-label">Aktuell</span>
-                <span class="satz-progress-value">
-                  Satz {{ satzForm.get('satz_nummer')?.value }}
-                  @if (selectedUebung.saetze.length > 0) {
-                    / {{ selectedUebung.saetze.length }}
-                  }
-                </span>
+            @if (selectedUebungGewichte.length === 0) {
+              <div class="satz-info-hint">
+                <mat-icon>info_outline</mat-icon>
+                <span>Keine Gewichte hinterlegt. Bitte zuerst verfügbare Gewichte im Trainingsplan eintragen.</span>
               </div>
-              <div class="input-row">
-                <mat-form-field class="flex-field">
-                  @if (selectedUebung.saetze.length > 0) {
-                    <mat-select formControlName="satz_nummer"
-                      (selectionChange)="onSatzNrChange($event.value)">
-                      @for (satz of selectedUebung.saetze; track satz.nr) {
-                        <mat-option [value]="satz.nr">{{ satz.nr }}</mat-option>
-                      }
-                    </mat-select>
-                  } @else {
-                    <input matInput type="number" formControlName="satz_nummer" min="1" />
-                  }
-                </mat-form-field>
-                <mat-form-field class="flex-field">
-                  <mat-label>kg</mat-label>
-                  @if (selectedUebungGewichte.length > 0) {
+            } @else if (currentExerciseSaetze.length >= 3) {
+              <div class="satz-info-hint">
+                <mat-icon>check_circle_outline</mat-icon>
+                <span>3 Sätze erfasst. Lösche einen Satz, um einen neuen hinzuzufügen.</span>
+              </div>
+            } @else {
+              <form [formGroup]="satzForm" (ngSubmit)="saveSatz()" class="satz-form">
+                <div class="satz-progress-row">
+                  <span class="satz-progress-label">Aktuell</span>
+                  <span class="satz-progress-value">
+                    Satz {{ satzForm.get('satz_nummer')?.value }}
+                    @if (selectedUebung.saetze.length > 0) {
+                      / {{ selectedUebung.saetze.length }}
+                    }
+                  </span>
+                </div>
+                <div class="input-row">
+                  <mat-form-field class="flex-field">
+                    @if (selectedUebung.saetze.length > 0) {
+                      <mat-select formControlName="satz_nummer"
+                        (selectionChange)="onSatzNrChange($event.value)">
+                        @for (satz of selectedUebung.saetze; track satz.nr) {
+                          <mat-option [value]="satz.nr">{{ satz.nr }}</mat-option>
+                        }
+                      </mat-select>
+                    } @else {
+                      <input matInput type="number" formControlName="satz_nummer" min="1" />
+                    }
+                  </mat-form-field>
+                  <mat-form-field class="flex-field">
+                    <mat-label>kg</mat-label>
                     <mat-select formControlName="gewicht">
                       @for (g of selectedUebungGewichte; track g) {
                         <mat-option [value]="g">{{ g }}</mat-option>
                       }
                     </mat-select>
-                  } @else {
-                    <input matInput disabled />
-                  }
-                </mat-form-field>
-                <mat-form-field class="flex-field">
-                  <mat-label>Wdh</mat-label>
-                  <input matInput type="number" formControlName="wiederholungen" min="1" />
-                </mat-form-field>
-                <div class="flex-field">
-                  <button mat-flat-button color="primary" type="submit"
-                    class="satz-save-btn" [disabled]="satzForm.invalid">
-                    <mat-icon>add</mat-icon>
-                  </button>
+                  </mat-form-field>
+                  <mat-form-field class="flex-field">
+                    <mat-label>Wdh</mat-label>
+                    <input matInput type="number" formControlName="wiederholungen" min="1" />
+                  </mat-form-field>
+                  <div class="flex-field">
+                    <button mat-flat-button color="primary" type="submit"
+                      class="satz-save-btn" [disabled]="satzForm.invalid">
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
                 </div>
-              </div>
-
-            </form>
+              </form>
+            }
           </mat-card-content>
         </mat-card>
 
