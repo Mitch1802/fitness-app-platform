@@ -9,6 +9,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { AuthSessionService } from '../_service/auth-session.service';
 import { ApiHttpService } from '../_service/api-http.service';
 import { User } from '../_interface/user';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-shell',
@@ -25,6 +26,7 @@ export class ShellComponent implements OnInit {
   private router = inject(Router);
 
   currentUser: User | null = null;
+  readonly version = environment.version;
 
   ngOnInit(): void {
     this.apiService.get<User>('users/self').subscribe({

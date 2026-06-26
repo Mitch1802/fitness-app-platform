@@ -16,6 +16,8 @@ services:
     build:
       context: .
       dockerfile: ./docker/nginx/Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-test}
     ports:
       - "${PORT:-80}:80"
     depends_on:

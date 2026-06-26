@@ -103,4 +103,17 @@ export class StatistikComponent implements OnInit {
     const dates = new Set(this.selectedUebung.daten.map(d => d.datum.substring(0, 10)));
     return dates.size;
   }
+
+  get letzteSaetze(): { datum: string; satz_nummer: number; wiederholungen: number; gewicht: number }[] {
+    if (!this.selectedUebung) return [];
+    const lastByDate = new Map<string, { datum: string; satz_nummer: number; wiederholungen: number; gewicht: number }>();
+    for (const d of this.selectedUebung.daten) {
+      const key = d.datum.substring(0, 10);
+      const prev = lastByDate.get(key);
+      if (!prev || d.satz_nummer > prev.satz_nummer) {
+        lastByDate.set(key, d);
+      }
+    }
+    return Array.from(lastByDate.values()).sort((a, b) => a.datum.localeCompare(b.datum));
+  }
 }

@@ -4,6 +4,8 @@ WORKDIR /app
 COPY ./frontend/package*.json ./
 RUN npm install --prefer-offline
 COPY ./frontend/ ./
+ARG APP_VERSION=test
+ENV APP_VERSION=${APP_VERSION}
 RUN npm run build
 
 # ── Runtime Stage: Nginx ──────────────────────────────────────────────────────
