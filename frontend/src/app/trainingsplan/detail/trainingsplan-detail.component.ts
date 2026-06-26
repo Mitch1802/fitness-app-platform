@@ -2,7 +2,7 @@ import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule, AbstractControl } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -22,7 +22,7 @@ const DEFAULT_WEIGHT_INCREMENT = 2.5;
   templateUrl: './trainingsplan-detail.component.html',
   styleUrls: ['./trainingsplan-detail.component.sass'],
   imports: [
-    CommonModule, ReactiveFormsModule, RouterLink,
+    CommonModule, ReactiveFormsModule, FormsModule, RouterLink,
     MatCardModule, MatButtonModule, MatIconModule,
     MatInputModule, MatFormFieldModule, MatSelectModule,
     MatDividerModule,
@@ -46,6 +46,9 @@ export class TrainingsplanDetailComponent implements OnInit {
   isNew = false;
   saving = false;
   deletingPlan = false;
+
+  verfuegbareGewichteList: number[] = [];
+  newGewichtInput = '';
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
@@ -92,21 +95,18 @@ export class TrainingsplanDetailComponent implements OnInit {
       ? normalizedUebung.gewicht_steigerung
       : null;
 
-    const verfGewichteArr = normalizedUebung?.verfuegbare_gewichte ?? [];
-    const verfGewichteText = verfGewichteArr.length > 0
-      ? verfGewichteArr.map(g => String(g)).join('; ')
-      : '';
-
     // For new exercises, default reihenfolge to max existing + 1
     const nextReihenfolge = normalizedUebung !== null
       ? normalizedUebung.reihenfolge
       : this.computeNextReihenfolge();
 
+    this.verfuegbareGewichteList = normalizedUebung?.verfuegbare_gewichte?.slice() ?? [];
+    this.newGewichtInput = '';
+
     this.uebungForm = this.fb.group({
       name: [normalizedUebung?.name ?? '', [Validators.required]],
       hinweis: [normalizedUebung?.hinweis ?? ''],
       gewicht_steigerung: [initialSteigerung, [Validators.min(0)]],
-      verfuegbare_gewichte_text: [verfGewichteText],
       vorgaenger: [normalizedUebung?.vorgaenger ?? null],
       nachfolger: [normalizedUebung?.nachfolger_id ?? this.findNachfolgerId(normalizedUebung?.id ?? null)],
       reihenfolge: [nextReihenfolge],
@@ -149,6 +149,19 @@ export class TrainingsplanDetailComponent implements OnInit {
   get successorOptions(): Uebung[] {
     const vorgaengerId = this.uebungForm?.get('vorgaenger')?.value ?? null;
     return this.otherUebungen.filter(u => u.id !== vorgaengerId);
+  }
+
+  addGewicht(): void {
+    const val = parseFloat(this.newGewichtInput.replace(',', '.'));
+    if (isNaN(val) || val <= 0) return;
+    if (!this.verfuegbareGewichteList.includes(val)) {
+      this.verfuegbareGewichteList = [...this.verfuegbareGewichteList, val].sort((a, b) => a - b);
+    }
+    this.newGewichtInput = '';
+  }
+
+  removeGewicht(index: number): void {
+    this.verfuegbareGewichteList = this.verfuegbareGewichteList.filter((_, i) => i !== index);
   }
 
   addSatz(): void {
@@ -281,29 +294,17 @@ export class TrainingsplanDetailComponent implements OnInit {
         }))
       : [];
 
-    const verfuegbare_gewichte = this.parseVerfuegbareGewichte(raw.verfuegbare_gewichte_text ?? '');
-
     return {
       name: raw.name,
       hinweis: raw.hinweis ?? '',
       gewicht_steigerung: rawSteigerung === '' || rawSteigerung === null || rawSteigerung === undefined
         ? 0
         : Number(rawSteigerung),
-      verfuegbare_gewichte,
+      verfuegbare_gewichte: [...this.verfuegbareGewichteList],
       vorgaenger: raw.vorgaenger ?? null,
       reihenfolge: Number(raw.reihenfolge ?? 0),
       saetze,
     };
-  }
-
-  private parseVerfuegbareGewichte(text: string): number[] {
-    if (!text || !text.trim()) return [];
-    return text
-      .split(/[;,]+/)
-      .map(s => s.trim())
-      .filter(s => s.length > 0)
-      .map(s => parseFloat(s.replace(',', '.')))
-      .filter(n => !isNaN(n));
   }
 
   private syncNachfolger(currentId: number, desiredNachfolgerId: number | null): Observable<unknown> {
