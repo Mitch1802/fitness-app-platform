@@ -85,7 +85,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (d of selectedUebung.daten; track $index) {
+              @for (d of letzteSaetze; track $index) {
                 <tr>
                   <td>{{ d.datum | date:'dd.MM.yy' }}</td>
                   <td>{{ d.satz_nummer }}</td>

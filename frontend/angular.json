@@ -46,6 +46,9 @@
               "src/styles.sass"
             ],
             "scripts": [],
+            "define": {
+              "APP_VERSION": "\"test\""
+            },
             "optimization": {
               "scripts": true,
               "styles": {
