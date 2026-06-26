@@ -153,7 +153,7 @@ export class TrainingsplanDetailComponent implements OnInit {
 
   addGewicht(): void {
     const val = parseFloat(this.newGewichtInput.replace(',', '.'));
-    if (isNaN(val) || val < 0) return;
+    if (isNaN(val) || val <= 0) return;
     if (!this.verfuegbareGewichteList.includes(val)) {
       this.verfuegbareGewichteList = [...this.verfuegbareGewichteList, val].sort((a, b) => a - b);
     }
@@ -164,7 +164,8 @@ export class TrainingsplanDetailComponent implements OnInit {
     this.verfuegbareGewichteList = this.verfuegbareGewichteList.filter((_, i) => i !== index);
   }
 
-  addSatz(): void {    const len = this.saetzeArray.length;
+  addSatz(): void {
+    const len = this.saetzeArray.length;
     const lastWdh = len > 0 ? (this.saetzeArray.at(len - 1).get('wdh')?.value ?? '10') : '10';
     const lastGewicht = len > 0 ? (this.saetzeArray.at(len - 1).get('gewicht')?.value ?? 0) : 0;
     this.saetzeArray.push(this.satzGroup({ nr: len + 1, wdh: lastWdh, gewicht: lastGewicht }));
