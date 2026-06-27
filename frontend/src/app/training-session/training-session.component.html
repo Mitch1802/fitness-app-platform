@@ -209,7 +209,7 @@
                   </mat-form-field>
                   <mat-form-field class="flex-field">
                     <mat-select formControlName="gewicht">
-                      @for (g of selectedUebungGewichte; track g) {
+                      @for (g of displayedGewichtOptions; track g) {
                         <mat-option [value]="g">{{ g | number:'1.1-1' }}</mat-option>
                       }
                     </mat-select>

@@ -101,6 +101,17 @@ export class TrainingSessionComponent implements OnInit {
     return [...gewichte].sort((a, b) => a - b);
   }
 
+  get displayedGewichtOptions(): number[] {
+    const gewichte = this.selectedUebungGewichte;
+    if (!this.satzForm?.get('gewicht_erhoehen')?.value) {
+      return gewichte;
+    }
+
+    return gewichte
+      .map((gewicht) => this.getNextAvailableGewicht(gewicht) ?? gewicht)
+      .filter((gewicht, index, all) => all.indexOf(gewicht) === index);
+  }
+
   getDisplayedSatzGewicht(gewicht: number | null | undefined): number | null {
     if (gewicht === null || gewicht === undefined) {
       return null;
