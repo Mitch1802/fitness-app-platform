@@ -14,6 +14,8 @@ from .serializers import (
     ExtraUebungSerializer,
 )
 
+WEIGHT_DECIMAL_PLACES = 2
+
 
 class TrainingsplanListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -100,6 +102,7 @@ class TrainingSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
                 if uebung.pk in seen_uebung_ids:
                     continue
                 seen_uebung_ids.add(uebung.pk)
+                uebung.refresh_from_db()
                 verfuegbare = uebung.verfuegbare_gewichte
                 if verfuegbare and isinstance(verfuegbare, list) and len(verfuegbare) > 0:
                     # Advance to next higher weight in the available list
@@ -135,7 +138,7 @@ class TrainingSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
                 if isinstance(satz, dict) and satz.get("gewicht") is not None:
                     try:
                         updated_satz = dict(satz)
-                        updated_satz["gewicht"] = round(float(satz["gewicht"]) + delta, 2)
+                        updated_satz["gewicht"] = round(float(satz["gewicht"]) + delta, WEIGHT_DECIMAL_PLACES)
                         updated_saetze.append(updated_satz)
                     except (TypeError, ValueError):
                         updated_saetze.append(satz)
