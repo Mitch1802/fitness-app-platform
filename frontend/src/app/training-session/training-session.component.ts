@@ -405,15 +405,11 @@ export class TrainingSessionComponent implements OnInit {
   }
 
   private getNextAvailableGewicht(gewicht: number | null | undefined): number | undefined {
-    if (gewicht === null || gewicht === undefined) {
-      return undefined;
-    }
-    const currentGewicht = gewicht;
-    if (!Number.isFinite(currentGewicht)) {
+    if (gewicht === null || gewicht === undefined || !Number.isFinite(gewicht)) {
       return undefined;
     }
     // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
-    return this.selectedUebungGewichte.find(g => g > currentGewicht);
+    return this.selectedUebungGewichte.find(g => g > gewicht);
   }
 
   toggleGewichtErhoehen(satz: SatzErgebnis): void {
