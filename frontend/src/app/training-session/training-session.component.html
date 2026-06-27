@@ -180,10 +180,10 @@
                 <mat-icon>info_outline</mat-icon>
                 <span>Keine Gewichte hinterlegt. Bitte zuerst verfügbare Gewichte im Trainingsplan eintragen.</span>
               </div>
-            } @else if (currentExerciseSaetze.length >= 3) {
+            } @else if (currentExerciseSaetze.length >= {{ selectedUebung.saetze.length }}) {
               <div class="satz-info-hint">
                 <mat-icon>check_circle_outline</mat-icon>
-                <span>3 Sätze erfasst. Lösche einen Satz, um einen neuen hinzuzufügen.</span>
+                <span>{{ selectedUebung.saetze.length }} Sätze erfasst. Lösche einen Satz, um einen neuen hinzuzufügen.</span>
               </div>
             } @else {
               <form [formGroup]="satzForm" (ngSubmit)="saveSatz()" class="satz-form">
