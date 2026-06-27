@@ -408,8 +408,8 @@ export class TrainingSessionComponent implements OnInit {
     if (gewicht === null || gewicht === undefined) {
       return undefined;
     }
-    const currentGewicht = Number(gewicht);
-    if (isNaN(currentGewicht)) {
+    const currentGewicht = gewicht;
+    if (!Number.isFinite(currentGewicht)) {
       return undefined;
     }
     // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
