@@ -114,6 +114,6 @@ export class StatistikComponent implements OnInit {
         lastByDate.set(key, d);
       }
     }
-    return Array.from(lastByDate.values()).sort((a, b) => a.datum.localeCompare(b.datum));
+    return Array.from(lastByDate.values()).sort((a, b) => b.datum.localeCompare(a.datum));
   }
 }
