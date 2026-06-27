@@ -180,7 +180,7 @@
                 <mat-icon>info_outline</mat-icon>
                 <span>Keine Gewichte hinterlegt. Bitte zuerst verfügbare Gewichte im Trainingsplan eintragen.</span>
               </div>
-            } @else if (currentExerciseSaetze.length >= {{ selectedUebung.saetze.length }}) {
+            } @else if (currentExerciseSaetze.length >= selectedUebung.saetze.length ) {
               <div class="satz-info-hint">
                 <mat-icon>check_circle_outline</mat-icon>
                 <span>{{ selectedUebung.saetze.length }} Sätze erfasst. Lösche einen Satz, um einen neuen hinzuzufügen.</span>
