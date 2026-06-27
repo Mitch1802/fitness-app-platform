@@ -102,11 +102,7 @@ export class TrainingSessionComponent implements OnInit {
   }
 
   get displayedGewichtOptions(): number[] {
-    const gewichte = this.selectedUebungGewichte;
-    if (!this.satzForm?.get('gewicht_erhoehen')?.value) {
-      return gewichte;
-    }
-    return this.getSteigerungDropdownGewichte(gewichte);
+    return this.selectedUebungGewichte;
   }
 
   getDisplayedSatzGewicht(gewicht: number | null | undefined): number | null {
@@ -364,7 +360,7 @@ export class TrainingSessionComponent implements OnInit {
       const plannedGewicht = planned.gewicht ?? this.selectedUebung.gewicht ?? 0;
       this.satzForm.patchValue({
         wiederholungen: this.parseWdh(planned.wdh),
-        gewicht: this.getSteigerungGewicht(plannedGewicht),
+        gewicht: plannedGewicht,
       });
     }
   }
@@ -396,16 +392,7 @@ export class TrainingSessionComponent implements OnInit {
 
   toggleSteigerung(): void {
     const currentGewichtErhoehen = this.satzForm.get('gewicht_erhoehen')?.value;
-    const newValue = !currentGewichtErhoehen;
-    if (newValue) {
-      const currentGewicht = this.satzForm.get('gewicht')?.value;
-      const nextGewicht = this.getNextAvailableGewicht(currentGewicht ?? null);
-      if (nextGewicht !== undefined) {
-        this.satzForm.patchValue({ gewicht_erhoehen: newValue, gewicht: nextGewicht });
-        return;
-      }
-    }
-    this.satzForm.patchValue({ gewicht_erhoehen: newValue });
+    this.satzForm.patchValue({ gewicht_erhoehen: !currentGewichtErhoehen });
   }
 
   private getSteigerungGewicht(gewicht: number): number {
@@ -421,12 +408,6 @@ export class TrainingSessionComponent implements OnInit {
     }
     // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
     return this.selectedUebungGewichte.find(g => g > gewicht);
-  }
-
-  private getSteigerungDropdownGewichte(gewichte: number[]): number[] {
-    return Array.from(new Set(
-      gewichte.map((gewicht) => this.getNextAvailableGewicht(gewicht) ?? gewicht)
-    )).sort((a, b) => a - b);
   }
 
   toggleGewichtErhoehen(satz: SatzErgebnis): void {
