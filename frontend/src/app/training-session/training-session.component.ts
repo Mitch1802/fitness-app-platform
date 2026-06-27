@@ -13,7 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TrainingSessionService } from '../_service/training-session.service';
 import { TrainingsplanService } from '../_service/trainingsplan.service';
 import { TrainingSession, SatzErgebnis } from '../_interface/training-session';
-import { Trainingsplan, Uebung, Satz } from '../_interface/trainingsplan';
+import { Trainingsplan, Uebung } from '../_interface/trainingsplan';
 import { finalize } from 'rxjs';
 
 const DEFAULT_WEIGHT_INCREMENT = 2.5;
@@ -101,16 +101,11 @@ export class TrainingSessionComponent implements OnInit {
     return [...gewichte].sort((a, b) => a - b);
   }
 
-  get displayedPlannedSaetze(): Satz[] {
-    if (!this.selectedUebung) return [];
-    const isSteigerungAktiv = Boolean(this.satzForm?.get('gewicht_erhoehen')?.value);
-    if (!isSteigerungAktiv) {
-      return this.selectedUebung.saetze;
+  getDisplayedSatzGewicht(gewicht: number | null | undefined): number | null {
+    if (gewicht === null || gewicht === undefined) {
+      return null;
     }
-    return this.selectedUebung.saetze.map((satz) => ({
-      ...satz,
-      gewicht: this.getNextAvailableGewicht(satz.gewicht) ?? satz.gewicht,
-    }));
+    return this.getSteigerungGewicht(gewicht);
   }
 
   get canGoNextExercise(): boolean {
@@ -410,6 +405,9 @@ export class TrainingSessionComponent implements OnInit {
   }
 
   private getNextAvailableGewicht(gewicht: number | null | undefined): number | undefined {
+    if (gewicht === null || gewicht === undefined) {
+      return undefined;
+    }
     const currentGewicht = Number(gewicht);
     if (isNaN(currentGewicht)) {
       return undefined;
