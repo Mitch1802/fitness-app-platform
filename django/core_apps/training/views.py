@@ -94,8 +94,12 @@ class TrainingSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
         if new_abgeschlossen and not instance.abgeschlossen:
             serializer.validated_data.setdefault("abgeschlossen_am", timezone.now())
             # Increase exercise weights where flagged
+            seen_uebung_ids = set()
             for ergebnis in instance.satz_ergebnisse.filter(gewicht_erhoehen=True, uebung__isnull=False):
                 uebung = ergebnis.uebung
+                if uebung.pk in seen_uebung_ids:
+                    continue
+                seen_uebung_ids.add(uebung.pk)
                 verfuegbare = uebung.verfuegbare_gewichte
                 if verfuegbare and isinstance(verfuegbare, list) and len(verfuegbare) > 0:
                     # Advance to next higher weight in the available list
@@ -106,17 +110,40 @@ class TrainingSessionDetailView(generics.RetrieveUpdateDestroyAPIView):
                     current = float(uebung.gewicht)
                     next_gewichte = [g for g in gewichte if g > current]
                     if next_gewichte:
-                        Uebung.objects.filter(pk=uebung.pk).update(gewicht=next_gewichte[0])
+                        new_gewicht = next_gewichte[0]
+                        self._apply_weight_increase(uebung, new_gewicht)
                 else:
                     steigerung = (
                         uebung.gewicht_steigerung
                         if uebung.gewicht_steigerung is not None
                         else uebung.trainingsplan.gewicht_steigerung
                     )
-                    Uebung.objects.filter(pk=uebung.pk).update(
-                        gewicht=uebung.gewicht + steigerung
-                    )
+                    new_gewicht = float(uebung.gewicht) + float(steigerung)
+                    self._apply_weight_increase(uebung, new_gewicht)
         serializer.save()
+
+    @staticmethod
+    def _apply_weight_increase(uebung, new_gewicht):
+        """Update uebung.gewicht and apply the same delta to any per-set weights in saetze."""
+        delta = new_gewicht - float(uebung.gewicht)
+        saetze = uebung.saetze
+        if isinstance(saetze, list) and any(
+            isinstance(s, dict) and s.get("gewicht") is not None for s in saetze
+        ):
+            updated_saetze = []
+            for satz in saetze:
+                if isinstance(satz, dict) and satz.get("gewicht") is not None:
+                    try:
+                        updated_satz = dict(satz)
+                        updated_satz["gewicht"] = round(float(satz["gewicht"]) + delta, 2)
+                        updated_saetze.append(updated_satz)
+                    except (TypeError, ValueError):
+                        updated_saetze.append(satz)
+                else:
+                    updated_saetze.append(satz)
+            Uebung.objects.filter(pk=uebung.pk).update(gewicht=new_gewicht, saetze=updated_saetze)
+        else:
+            Uebung.objects.filter(pk=uebung.pk).update(gewicht=new_gewicht)
 
     def perform_destroy(self, instance):
         instance.delete()
