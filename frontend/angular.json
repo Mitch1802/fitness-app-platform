@@ -54,6 +54,9 @@
               "styles": {
                 "minify": true,
                 "inlineCritical": true
+              },
+              "fonts": {
+                "inline": false
               }
             }
           },
