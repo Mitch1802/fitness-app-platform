@@ -109,7 +109,7 @@ export class TrainingSessionComponent implements OnInit {
 
     return Array.from(new Set(
       gewichte.map((gewicht) => this.getNextAvailableGewicht(gewicht) ?? gewicht)
-    ));
+    )).sort((a, b) => a - b);
   }
 
   getDisplayedSatzGewicht(gewicht: number | null | undefined): number | null {
