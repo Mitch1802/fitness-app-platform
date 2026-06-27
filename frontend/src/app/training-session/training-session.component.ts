@@ -410,12 +410,6 @@ export class TrainingSessionComponent implements OnInit {
     return this.selectedUebungGewichte.find(g => g > gewicht);
   }
 
-  private getSteigerungDropdownGewichte(gewichte: number[]): number[] {
-    return Array.from(new Set(
-      gewichte.map((gewicht) => this.getNextAvailableGewicht(gewicht) ?? gewicht)
-    )).sort((a, b) => a - b);
-  }
-
   toggleGewichtErhoehen(satz: SatzErgebnis): void {
     const newVal = !satz.gewicht_erhoehen;
     this.service.updateSatz(satz.id, { gewicht_erhoehen: newVal }).subscribe({
