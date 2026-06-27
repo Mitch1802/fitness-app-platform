@@ -380,6 +380,7 @@ export class TrainingSessionComponent implements OnInit {
     const newValue = !currentGewichtErhoehen;
     if (newValue) {
       const currentGewicht = this.satzForm.get('gewicht')?.value;
+      // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
       const gewichte = this.selectedUebungGewichte;
       const nextGewicht = gewichte.find(g => g > currentGewicht);
       if (nextGewicht !== undefined) {
