@@ -118,7 +118,7 @@
                   <div class="gewichte-list">
                     @for (g of verfuegbareGewichteList; track g; let i = $index) {
                       <span class="gewicht-chip">
-                        {{ g }} kg
+                        {{ g | number:'1.1-1' }} kg
                         <button mat-icon-button type="button" class="gewicht-chip-remove" (click)="removeGewicht(i)">
                           <mat-icon>close</mat-icon>
                         </button>
@@ -179,7 +179,7 @@
                         <mat-label>kg</mat-label>
                         <mat-select formControlName="gewicht">
                           @for (g of verfuegbareGewichteList; track g) {
-                            <mat-option [value]="g">{{ g }}</mat-option>
+                            <mat-option [value]="g">{{ g | number:'1.1-1' }}</mat-option>
                           }
                         </mat-select>
                       </mat-form-field>
