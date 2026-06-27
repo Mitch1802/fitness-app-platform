@@ -13,7 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TrainingSessionService } from '../_service/training-session.service';
 import { TrainingsplanService } from '../_service/trainingsplan.service';
 import { TrainingSession, SatzErgebnis } from '../_interface/training-session';
-import { Trainingsplan, Uebung } from '../_interface/trainingsplan';
+import { Trainingsplan, Uebung, Satz } from '../_interface/trainingsplan';
 import { finalize } from 'rxjs';
 
 const DEFAULT_WEIGHT_INCREMENT = 2.5;
@@ -99,6 +99,18 @@ export class TrainingSessionComponent implements OnInit {
     const gewichte = this.selectedUebung?.verfuegbare_gewichte;
     if (!Array.isArray(gewichte) || gewichte.length === 0) return [];
     return [...gewichte].sort((a, b) => a - b);
+  }
+
+  get displayedPlannedSaetze(): Satz[] {
+    if (!this.selectedUebung) return [];
+    const isSteigerungAktiv = Boolean(this.satzForm?.get('gewicht_erhoehen')?.value);
+    if (!isSteigerungAktiv) {
+      return this.selectedUebung.saetze;
+    }
+    return this.selectedUebung.saetze.map((satz) => ({
+      ...satz,
+      gewicht: this.getNextAvailableGewicht(satz.gewicht) ?? satz.gewicht,
+    }));
   }
 
   get canGoNextExercise(): boolean {
@@ -343,9 +355,10 @@ export class TrainingSessionComponent implements OnInit {
     if (!this.selectedUebung) return;
     const planned = this.selectedUebung.saetze.find(s => s.nr === satzNr);
     if (planned) {
+      const plannedGewicht = planned.gewicht ?? this.selectedUebung.gewicht ?? 0;
       this.satzForm.patchValue({
         wiederholungen: this.parseWdh(planned.wdh),
-        gewicht: planned.gewicht ?? this.selectedUebung.gewicht ?? 0,
+        gewicht: this.getSteigerungGewicht(plannedGewicht),
       });
     }
   }
@@ -380,15 +393,29 @@ export class TrainingSessionComponent implements OnInit {
     const newValue = !currentGewichtErhoehen;
     if (newValue) {
       const currentGewicht = this.satzForm.get('gewicht')?.value;
-      // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
-      const gewichte = this.selectedUebungGewichte;
-      const nextGewicht = gewichte.find(g => g > currentGewicht);
+      const nextGewicht = this.getNextAvailableGewicht(currentGewicht);
       if (nextGewicht !== undefined) {
         this.satzForm.patchValue({ gewicht_erhoehen: newValue, gewicht: nextGewicht });
         return;
       }
     }
     this.satzForm.patchValue({ gewicht_erhoehen: newValue });
+  }
+
+  private getSteigerungGewicht(gewicht: number): number {
+    if (!this.satzForm.get('gewicht_erhoehen')?.value) {
+      return gewicht;
+    }
+    return this.getNextAvailableGewicht(gewicht) ?? gewicht;
+  }
+
+  private getNextAvailableGewicht(gewicht: number | null | undefined): number | undefined {
+    const currentGewicht = Number(gewicht);
+    if (isNaN(currentGewicht)) {
+      return undefined;
+    }
+    // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
+    return this.selectedUebungGewichte.find(g => g > currentGewicht);
   }
 
   toggleGewichtErhoehen(satz: SatzErgebnis): void {

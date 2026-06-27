@@ -154,9 +154,9 @@
 
           <mat-card-content class="planned-saetze-content">
             <div class="planned-saetze-title">Geplante Sätze</div>
-            @if (selectedUebung.saetze.length > 0) {
+            @if (displayedPlannedSaetze.length > 0) {
               <div class="planned-saetze-list">
-                @for (satz of selectedUebung.saetze; track satz.nr) {
+                @for (satz of displayedPlannedSaetze; track satz.nr) {
                   <div class="planned-satz-row">
                     <span class="planned-satz-nr">Satz {{ satz.nr }}</span>
                     <div class="planned-satz-data">
