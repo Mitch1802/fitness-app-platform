@@ -162,7 +162,7 @@
                     <div class="planned-satz-data">
                       <span>{{ satz.wdh }} Wdh</span>
                       @if (satz.gewicht !== undefined && satz.gewicht !== null) {
-                        <span>{{ satz.gewicht | number:'1.1-1' }} kg</span>
+                        <span>{{ getDisplayedSatzGewicht(satz.gewicht) | number:'1.1-1' }} kg</span>
                       }
                     </div>
                   </div>

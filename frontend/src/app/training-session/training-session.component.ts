@@ -101,6 +101,16 @@ export class TrainingSessionComponent implements OnInit {
     return [...gewichte].sort((a, b) => a - b);
   }
 
+  getDisplayedSatzGewicht(gewicht: number | null | undefined): number | null {
+    if (gewicht === null || gewicht === undefined) {
+      return null;
+    }
+    if (!Number.isFinite(gewicht)) {
+      return null;
+    }
+    return this.getSteigerungGewicht(gewicht);
+  }
+
   get canGoNextExercise(): boolean {
     return !!this.getNextUnlockedExercise(this.selectedUebungId);
   }
@@ -343,9 +353,10 @@ export class TrainingSessionComponent implements OnInit {
     if (!this.selectedUebung) return;
     const planned = this.selectedUebung.saetze.find(s => s.nr === satzNr);
     if (planned) {
+      const plannedGewicht = planned.gewicht ?? this.selectedUebung.gewicht ?? 0;
       this.satzForm.patchValue({
         wiederholungen: this.parseWdh(planned.wdh),
-        gewicht: planned.gewicht ?? this.selectedUebung.gewicht ?? 0,
+        gewicht: this.getSteigerungGewicht(plannedGewicht),
       });
     }
   }
@@ -380,15 +391,28 @@ export class TrainingSessionComponent implements OnInit {
     const newValue = !currentGewichtErhoehen;
     if (newValue) {
       const currentGewicht = this.satzForm.get('gewicht')?.value;
-      // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
-      const gewichte = this.selectedUebungGewichte;
-      const nextGewicht = gewichte.find(g => g > currentGewicht);
+      const nextGewicht = this.getNextAvailableGewicht(currentGewicht ?? null);
       if (nextGewicht !== undefined) {
         this.satzForm.patchValue({ gewicht_erhoehen: newValue, gewicht: nextGewicht });
         return;
       }
     }
     this.satzForm.patchValue({ gewicht_erhoehen: newValue });
+  }
+
+  private getSteigerungGewicht(gewicht: number): number {
+    if (!this.satzForm.get('gewicht_erhoehen')?.value) {
+      return gewicht;
+    }
+    return this.getNextAvailableGewicht(gewicht) ?? gewicht;
+  }
+
+  private getNextAvailableGewicht(gewicht: number | null): number | undefined {
+    if (gewicht === null || !Number.isFinite(gewicht)) {
+      return undefined;
+    }
+    // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
+    return this.selectedUebungGewichte.find(g => g > gewicht);
   }
 
   toggleGewichtErhoehen(satz: SatzErgebnis): void {
