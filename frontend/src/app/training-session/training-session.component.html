@@ -141,7 +141,7 @@
               @for (satz of currentExerciseSaetze; track satz.id) {
                 <div class="prev-satz-row">
                   <span class="prev-satz-nr">Satz {{ satz.satz_nummer }}</span>
-                  <span class="prev-satz-data">{{ satz.wiederholungen }} Wdh x {{ satz.gewicht | number:'1.1-2' }} kg</span>
+                  <span class="prev-satz-data">{{ satz.wiederholungen }} Wdh x {{ satz.gewicht | number:'1.1-1' }} kg</span>
                   <div class="prev-satz-actions">
                     <button mat-icon-button color="warn" (click)="deleteSatz(satz.id)">
                       <mat-icon>delete_outline</mat-icon>
@@ -162,7 +162,7 @@
                     <div class="planned-satz-data">
                       <span>{{ satz.wdh }} Wdh</span>
                       @if (satz.gewicht !== undefined && satz.gewicht !== null) {
-                        <span>{{ satz.gewicht }} kg</span>
+                        <span>{{ satz.gewicht | number:'1.1-1' }} kg</span>
                       }
                     </div>
                   </div>
@@ -195,6 +195,10 @@
                       / {{ selectedUebung.saetze.length }}
                     }
                   </span>
+                  <button mat-flat-button color="primary" type="submit"
+                    class="satz-save-btn" [disabled]="satzForm.invalid">
+                    <mat-icon>add</mat-icon>
+                  </button>
                 </div>
                 <div class="input-row">
                   <mat-form-field class="flex-field">
@@ -212,19 +216,13 @@
                   <mat-form-field class="flex-field">
                     <mat-select formControlName="gewicht">
                       @for (g of selectedUebungGewichte; track g) {
-                        <mat-option [value]="g">{{ g }}</mat-option>
+                        <mat-option [value]="g">{{ g | number:'1.1-1' }}</mat-option>
                       }
                     </mat-select>
                   </mat-form-field>
                   <mat-form-field class="flex-field">
                     <input matInput type="number" formControlName="wiederholungen" min="1" />
                   </mat-form-field>
-                  <div class="flex-field satz-btn-wrapper">
-                    <button mat-flat-button color="primary" type="submit"
-                      class="satz-save-btn" [disabled]="satzForm.invalid">
-                      <mat-icon>add</mat-icon>
-                    </button>
-                  </div>
                 </div>
               </form>
             }
@@ -312,7 +310,7 @@
                 <div class="result-set-grid">
                   <div class="result-field">
                     <span class="result-label">Gewicht</span>
-                    <span class="result-value">{{ satz.gewicht | number:'1.1-2' }} kg</span>
+                    <span class="result-value">{{ satz.gewicht | number:'1.1-1' }} kg</span>
                   </div>
                   <div class="result-field">
                     <span class="result-label">Wiederholungen</span>
