@@ -105,6 +105,9 @@ export class TrainingSessionComponent implements OnInit {
     if (gewicht === null || gewicht === undefined) {
       return null;
     }
+    if (!Number.isFinite(gewicht)) {
+      return null;
+    }
     return this.getSteigerungGewicht(gewicht);
   }
 
@@ -388,7 +391,7 @@ export class TrainingSessionComponent implements OnInit {
     const newValue = !currentGewichtErhoehen;
     if (newValue) {
       const currentGewicht = this.satzForm.get('gewicht')?.value;
-      const nextGewicht = this.getNextAvailableGewicht(currentGewicht);
+      const nextGewicht = this.getNextAvailableGewicht(currentGewicht ?? null);
       if (nextGewicht !== undefined) {
         this.satzForm.patchValue({ gewicht_erhoehen: newValue, gewicht: nextGewicht });
         return;
@@ -404,8 +407,8 @@ export class TrainingSessionComponent implements OnInit {
     return this.getNextAvailableGewicht(gewicht) ?? gewicht;
   }
 
-  private getNextAvailableGewicht(gewicht: number | null | undefined): number | undefined {
-    if (gewicht === null || gewicht === undefined || !Number.isFinite(gewicht)) {
+  private getNextAvailableGewicht(gewicht: number | null): number | undefined {
+    if (gewicht === null || !Number.isFinite(gewicht)) {
       return undefined;
     }
     // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
