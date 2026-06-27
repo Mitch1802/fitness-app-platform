@@ -129,11 +129,6 @@
                 <mat-icon>trending_up</mat-icon>
               </button>
             </mat-card-title>
-            @if (selectedUebung.saetze.length > 0) {
-              <mat-card-subtitle>
-                {{ selectedUebung.saetze.length }} Sätze geplant
-              </mat-card-subtitle>
-            }
             @if (selectedUebung.hinweis) {
               <mat-card-subtitle>{{ selectedUebung.hinweis }}</mat-card-subtitle>
             }
@@ -146,7 +141,7 @@
               @for (satz of currentExerciseSaetze; track satz.id) {
                 <div class="prev-satz-row">
                   <span class="prev-satz-nr">Satz {{ satz.satz_nummer }}</span>
-                  <span class="prev-satz-data">{{ satz.gewicht | number:'1.1-2' }} kg × {{ satz.wiederholungen }} Wdh</span>
+                  <span class="prev-satz-data">{{ satz.wiederholungen }} Wdh x {{ satz.gewicht | number:'1.1-2' }} kg</span>
                   <div class="prev-satz-actions">
                     <button mat-icon-button color="warn" (click)="deleteSatz(satz.id)">
                       <mat-icon>delete_outline</mat-icon>
@@ -193,7 +188,7 @@
             } @else {
               <form [formGroup]="satzForm" (ngSubmit)="saveSatz()" class="satz-form">
                 <div class="satz-progress-row">
-                  <span class="satz-progress-label">Aktuell</span>
+                  <span class="satz-progress-label">Aktuell (Satz/kg/Wdh)</span>
                   <span class="satz-progress-value">
                     Satz {{ satzForm.get('satz_nummer')?.value }}
                     @if (selectedUebung.saetze.length > 0) {
@@ -214,8 +209,7 @@
                       <input matInput type="number" formControlName="satz_nummer" min="1" />
                     }
                   </mat-form-field>
-                  <mat-form-field class="flex-field gewicht-field">
-                    <mat-label>kg</mat-label>
+                  <mat-form-field class="flex-field">
                     <mat-select formControlName="gewicht">
                       @for (g of selectedUebungGewichte; track g) {
                         <mat-option [value]="g">{{ g }}</mat-option>
@@ -223,7 +217,6 @@
                     </mat-select>
                   </mat-form-field>
                   <mat-form-field class="flex-field">
-                    <mat-label>Wdh</mat-label>
                     <input matInput type="number" formControlName="wiederholungen" min="1" />
                   </mat-form-field>
                   <div class="flex-field satz-btn-wrapper">
