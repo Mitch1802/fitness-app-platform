@@ -375,6 +375,22 @@ export class TrainingSessionComponent implements OnInit {
     });
   }
 
+  toggleSteigerung(): void {
+    const currentGewichtErhoehen = this.satzForm.get('gewicht_erhoehen')?.value;
+    const newValue = !currentGewichtErhoehen;
+    if (newValue) {
+      const currentGewicht = this.satzForm.get('gewicht')?.value;
+      // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
+      const gewichte = this.selectedUebungGewichte;
+      const nextGewicht = gewichte.find(g => g > currentGewicht);
+      if (nextGewicht !== undefined) {
+        this.satzForm.patchValue({ gewicht_erhoehen: newValue, gewicht: nextGewicht });
+        return;
+      }
+    }
+    this.satzForm.patchValue({ gewicht_erhoehen: newValue });
+  }
+
   toggleGewichtErhoehen(satz: SatzErgebnis): void {
     const newVal = !satz.gewicht_erhoehen;
     this.service.updateSatz(satz.id, { gewicht_erhoehen: newVal }).subscribe({

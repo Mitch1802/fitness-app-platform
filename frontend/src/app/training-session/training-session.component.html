@@ -125,7 +125,7 @@
               {{ selectedUebung.name }}
               <button mat-stroked-button type="button" class="erhoehen-toggle-btn"
                 [class.active]="satzForm.get('gewicht_erhoehen')?.value"
-                (click)="satzForm.patchValue({gewicht_erhoehen: !satzForm.get('gewicht_erhoehen')?.value})">
+                (click)="toggleSteigerung()">
                 <mat-icon>trending_up</mat-icon>
               </button>
             </mat-card-title>
@@ -214,7 +214,7 @@
                       <input matInput type="number" formControlName="satz_nummer" min="1" />
                     }
                   </mat-form-field>
-                  <mat-form-field class="flex-field">
+                  <mat-form-field class="flex-field gewicht-field">
                     <mat-label>kg</mat-label>
                     <mat-select formControlName="gewicht">
                       @for (g of selectedUebungGewichte; track g) {
@@ -226,7 +226,7 @@
                     <mat-label>Wdh</mat-label>
                     <input matInput type="number" formControlName="wiederholungen" min="1" />
                   </mat-form-field>
-                  <div class="flex-field">
+                  <div class="flex-field satz-btn-wrapper">
                     <button mat-flat-button color="primary" type="submit"
                       class="satz-save-btn" [disabled]="satzForm.invalid">
                       <mat-icon>add</mat-icon>
