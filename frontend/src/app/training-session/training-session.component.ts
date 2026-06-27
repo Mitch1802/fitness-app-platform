@@ -101,6 +101,14 @@ export class TrainingSessionComponent implements OnInit {
     return [...gewichte].sort((a, b) => a - b);
   }
 
+  get displayedGewichtOptions(): number[] {
+    const gewichte = this.selectedUebungGewichte;
+    if (!this.satzForm?.get('gewicht_erhoehen')?.value) {
+      return gewichte;
+    }
+    return this.getSteigerungDropdownGewichte(gewichte);
+  }
+
   getDisplayedSatzGewicht(gewicht: number | null | undefined): number | null {
     if (gewicht === null || gewicht === undefined) {
       return null;
@@ -413,6 +421,12 @@ export class TrainingSessionComponent implements OnInit {
     }
     // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
     return this.selectedUebungGewichte.find(g => g > gewicht);
+  }
+
+  private getSteigerungDropdownGewichte(gewichte: number[]): number[] {
+    return Array.from(new Set(
+      gewichte.map((gewicht) => this.getNextAvailableGewicht(gewicht) ?? gewicht)
+    )).sort((a, b) => a - b);
   }
 
   toggleGewichtErhoehen(satz: SatzErgebnis): void {
