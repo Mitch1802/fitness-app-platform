@@ -189,12 +189,6 @@
               <form [formGroup]="satzForm" (ngSubmit)="saveSatz()" class="satz-form">
                 <div class="satz-progress-row">
                   <span class="satz-progress-label">Aktuell (Satz/kg/Wdh)</span>
-                  <span class="satz-progress-value">
-                    Satz {{ satzForm.get('satz_nummer')?.value }}
-                    @if (selectedUebung.saetze.length > 0) {
-                      / {{ selectedUebung.saetze.length }}
-                    }
-                  </span>
                   <button mat-flat-button color="primary" type="submit"
                     class="satz-save-btn" [disabled]="satzForm.invalid">
                     <mat-icon>add</mat-icon>
