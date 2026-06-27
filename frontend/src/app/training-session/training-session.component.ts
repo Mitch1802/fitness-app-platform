@@ -107,9 +107,9 @@ export class TrainingSessionComponent implements OnInit {
       return gewichte;
     }
 
-    return gewichte
-      .map((gewicht) => this.getNextAvailableGewicht(gewicht) ?? gewicht)
-      .filter((gewicht, index, all) => all.indexOf(gewicht) === index);
+    return Array.from(new Set(
+      gewichte.map((gewicht) => this.getNextAvailableGewicht(gewicht) ?? gewicht)
+    ));
   }
 
   getDisplayedSatzGewicht(gewicht: number | null | undefined): number | null {
