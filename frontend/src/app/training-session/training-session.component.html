@@ -125,6 +125,7 @@
               {{ selectedUebung.name }}
               <button mat-stroked-button type="button" class="erhoehen-toggle-btn"
                 [class.active]="satzForm.get('gewicht_erhoehen')?.value"
+                [disabled]="steigerungSaving"
                 (click)="toggleSteigerung()">
                 <mat-icon>trending_up</mat-icon>
               </button>
