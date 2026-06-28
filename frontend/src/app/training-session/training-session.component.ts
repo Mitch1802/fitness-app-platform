@@ -265,7 +265,7 @@ export class TrainingSessionComponent implements OnInit {
       satz_nummer: nextSatzNr,
       wiederholungen: this.parseWdh(plannedSatz?.wdh),
       gewicht: plannedSatz?.gewicht ?? uebung.gewicht ?? 0,
-      gewicht_erhoehen: false,
+      gewicht_erhoehen: this.getExerciseSteigerungFlag(uebung.id, uebung.name),
     });
     this.showSatzForm = true;
     this.showExtraForm = false;
@@ -340,7 +340,7 @@ export class TrainingSessionComponent implements OnInit {
 
   private parseWdh(wdh: string | undefined): number {
     if (!wdh) return 10;
-    const first = String(wdh).split(/[-\/,]/)[0].trim();
+    const first = String(wdh).split(/[-/,]/)[0].trim();
     const parsed = parseInt(first, 10);
     return isNaN(parsed) ? 10 : parsed;
   }
@@ -381,7 +381,10 @@ export class TrainingSessionComponent implements OnInit {
         this.session!.satz_ergebnisse.push(satz);
         this.snackBar.open(`Satz ${satz.satz_nummer} gespeichert!`, '', { duration: 1500 });
         const nextSatzNr = satz.satz_nummer + 1;
-        this.satzForm.patchValue({ satz_nummer: nextSatzNr, gewicht_erhoehen: false });
+        this.satzForm.patchValue({
+          satz_nummer: nextSatzNr,
+          gewicht_erhoehen: this.getExerciseSteigerungFlag(satz.uebung, satz.uebung_name),
+        });
         this.onSatzNrChange(nextSatzNr);
       },
       error: (error: unknown) => {
@@ -391,8 +394,35 @@ export class TrainingSessionComponent implements OnInit {
   }
 
   toggleSteigerung(): void {
+    if (!this.session || !this.selectedUebung) {
+      return;
+    }
+
     const currentGewichtErhoehen = this.satzForm.get('gewicht_erhoehen')?.value;
-    this.satzForm.patchValue({ gewicht_erhoehen: !currentGewichtErhoehen });
+    const newValue = !currentGewichtErhoehen;
+    this.satzForm.patchValue({ gewicht_erhoehen: newValue });
+
+    const latestExerciseSet = this.getLatestExerciseSatz(this.selectedUebung.id, this.selectedUebung.name);
+    if (!latestExerciseSet) {
+      return;
+    }
+
+    this.service.updateSatz(latestExerciseSet.id, { gewicht_erhoehen: newValue }).subscribe({
+      next: (updated) => {
+        const idx = this.session!.satz_ergebnisse.findIndex((s) => s.id === updated.id);
+        if (idx >= 0) {
+          this.session!.satz_ergebnisse[idx] = updated;
+        }
+      },
+      error: (error: unknown) => {
+        this.satzForm.patchValue({ gewicht_erhoehen: !newValue });
+        this.snackBar.open(
+          this.extractErrorMessage(error, 'Steigerung konnte nicht gespeichert werden.'),
+          'OK',
+          { duration: 2800 },
+        );
+      },
+    });
   }
 
   private getSteigerungGewicht(gewicht: number): number {
@@ -408,6 +438,29 @@ export class TrainingSessionComponent implements OnInit {
     }
     // selectedUebungGewichte is sorted ascending, so find() returns the immediate next weight
     return this.selectedUebungGewichte.find(g => g > gewicht);
+  }
+
+  private getExerciseSteigerungFlag(uebungId: number | null | undefined, uebungName: string): boolean {
+    if (!this.session) {
+      return false;
+    }
+    return this.session.satz_ergebnisse.some(
+      (satz) => (satz.uebung === uebungId || satz.uebung_name === uebungName) && satz.gewicht_erhoehen
+    );
+  }
+
+  private getLatestExerciseSatz(uebungId: number | null, uebungName: string): SatzErgebnis | undefined {
+    if (!this.session) {
+      return undefined;
+    }
+    return this.session.satz_ergebnisse
+      .filter((satz) => satz.uebung === uebungId || satz.uebung_name === uebungName)
+      .sort((a, b) => {
+        if (a.satz_nummer !== b.satz_nummer) {
+          return b.satz_nummer - a.satz_nummer;
+        }
+        return b.id - a.id;
+      })[0];
   }
 
   toggleGewichtErhoehen(satz: SatzErgebnis): void {
